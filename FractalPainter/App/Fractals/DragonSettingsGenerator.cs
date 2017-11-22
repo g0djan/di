@@ -6,10 +6,10 @@ namespace FractalPainting.App.Fractals
 	{
 		private readonly Random random;
 
-		public DragonSettingsGenerator(Random random)
-		{
-			this.random = random;
-		}
+	    public DragonSettingsGenerator(Random random)
+	    {
+	        this.random = random;
+	    }
 
 		public DragonSettings Generate()
 		{
