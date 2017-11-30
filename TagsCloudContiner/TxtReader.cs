@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using NHunspell;
 using TagsCloudContiner.Interfaces;
-using OpenNLP.Tools.Tokenize;
 
 namespace TagsCloudContiner
 {
