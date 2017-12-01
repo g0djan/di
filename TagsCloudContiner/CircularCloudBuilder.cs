@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TagsCloudContiner.Interfaces;
+using TagsCloudContainer.Interfaces;
 using TagsCloudVisualization;
 
-namespace TagsCloudContiner
+namespace TagsCloudContainer
 {
     class CircularCloudBuilder : ITagsCloudBuilder
     {
-        public Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes)
+        public Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes, Point point)
         {
-            var layouter = new CircularCloudLayouter(new Point(512, 512));
+            var layouter = new CircularCloudLayouter(point);
             foreach (var rectangleShape in rectangleShapes)
                 layouter.PutNextRectangle(rectangleShape);
             return layouter.Cloud;

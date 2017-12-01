@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 using TagsCloudVisualization;
 
-namespace TagsCloudContiner.Interfaces
+namespace TagsCloudContainer.Interfaces
 {
     public interface ICloudDrawer
     {
-        void Draw(Cloud<WordRectangle> cloud, Graphics graphics);
+        void Draw(Cloud<TextRectangle> cloud, Graphics graphics);
     }
 }

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TagsCloudVisualization;
 
-namespace TagsCloudContiner.Interfaces
+namespace TagsCloudContainer.Interfaces
 {
     public interface ITagsCloudBuilder
     {
-        Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes);
+        Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes, Point cloudCenter);
     }
 }

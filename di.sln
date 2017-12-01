@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FractalPainter", "FractalPainter\FractalPainter.csproj", "{2A3ACF0E-1D07-4A1A-8320-F99DC2DE791F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagsCloudContiner", "TagsCloudContiner\TagsCloudContiner.csproj", "{410BE77E-9EDF-4F07-BAEF-EDE093F6B5AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagsCloudContainer", "TagsCloudContiner\TagsCloudContainer.csproj", "{410BE77E-9EDF-4F07-BAEF-EDE093F6B5AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagsCloudVisualization", "..\tdd\TagsCloudVisualization\TagsCloudVisualization.csproj", "{0145C5FF-47BA-418F-BCF7-85DF4D64D90B}"
 EndProject

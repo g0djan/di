@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
-using TagsCloudContiner.Interfaces;
+using TagsCloudContainer.Interfaces;
 using TagsCloudVisualization;
 
-namespace TagsCloudContiner
+namespace TagsCloudContainer
 {
     class CloudDrawer : ICloudDrawer
     {
@@ -14,15 +14,16 @@ namespace TagsCloudContiner
             this.color = color;
         }
 
-        public void Draw(Cloud<WordRectangle> cloud, Graphics graphics)
+        public void Draw(Cloud<TextRectangle> cloud, Graphics graphics)
         {
-//            var bitmap = new Bitmap(size.Width, size.Height);
-//            var graphics = Graphics.FromImage(bitmap);
             const TextFormatFlags flags = TextFormatFlags.WordBreak;
-            cloud.ForEach(rectangle =>
-                TextRenderer.DrawText(graphics, rectangle.Text, rectangle.font, rectangle.rectangle, color, flags));
-                //graphics.DrawString(rectangle.Text, font, pen, rectangle.rectangle));
-//            return bitmap;
+            cloud.ForEach(textRectangle =>
+                TextRenderer.DrawText(graphics,
+                    textRectangle.Word,
+                    textRectangle.Font, 
+                    textRectangle.Rectangle,
+                    color,
+                    flags));
         }
     }
 }
