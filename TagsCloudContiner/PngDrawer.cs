@@ -5,11 +5,11 @@ using TagsCloudVisualization;
 
 namespace TagsCloudContainer
 {
-    class CloudDrawer : ICloudDrawer
+    class PngDrawer : ICloudDrawer
     {
         private Color color;
 
-        public CloudDrawer(Color color)
+        public PngDrawer(Color color)
         {
             this.color = color;
         }
@@ -24,6 +24,12 @@ namespace TagsCloudContainer
                     textRectangle.Rectangle,
                     color,
                     flags));
+        }
+
+        public void Save(Bitmap bmp)
+        {
+            using (var newBmp = new Bitmap(bmp))
+                newBmp.Save("cloud.png");
         }
     }
 }

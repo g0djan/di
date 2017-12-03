@@ -10,7 +10,7 @@ namespace TagsCloudContainer
     public static class LinqExtensions
     {
         public static IEnumerable<string> PreprocessingWith(this IEnumerable<string> words,
-            IWordsProcessing wordProcessor) =>
+           TextFilter wordProcessor) =>
             wordProcessor.WordsPreprocessing(words);
 
 

@@ -6,34 +6,30 @@ using TagsCloudContainer.Interfaces;
 
 namespace TagsCloudContainer
 {
-    class TextFilter : IWordsProcessing
+    public class TextFilter
     {
         private readonly HashSet<string> boringWords;
-        private readonly HashSet<Func<string, bool>> conditions;
-        public Func<string, string> modificator { private get; set; }
+        private readonly Func<string, bool> condition;
+        private Func<string, string> modificator { get; }
 
-        public TextFilter()
+        public TextFilter(Func<string, bool> condition, Func<string, string> modificator)
         {
             boringWords = new HashSet<string>(new WebClient()
                 .DownloadString(@"https://jeroen.github.io/files/stopwords.txt")
-                .Split(' ')); ;
-            conditions = new HashSet<Func<string, bool>>();
-            modificator = word => word;
+                .Split(' '));
+            this.condition = condition;
+            this.modificator = modificator;
         }
         
-        public void AddBoringWords(params string[] newBoringStrings) => 
+        public void AddBoringWords(IEnumerable<string> newBoringStrings) => 
             newBoringStrings.ToList().ForEach(boringString => boringWords.Add(boringString));
 
-        public void RemoveBoringWords(params string[] boringStrings) => 
+        public void RemoveBoringWords(IEnumerable<string> boringStrings) => 
             boringStrings.ToList().ForEach(boringString => boringWords.Remove(boringString));
-
-        public void AddConditionForWords(Func<string, bool> condition) => conditions.Add(condition);
-
-        public void RemoveConditionForWords(Func<string, bool> condition) => conditions.Remove(condition);
 
         public IEnumerable<string> WordsPreprocessing(IEnumerable<string> words) => 
             words.Select(word => word.ToLower())
-            .Where(word => !boringWords.Contains(word) && conditions.All(condition => condition(word)))
+            .Where(word => !boringWords.Contains(word) && condition(word))
             .Select(word => modificator(word))
             .ToArray();
     }

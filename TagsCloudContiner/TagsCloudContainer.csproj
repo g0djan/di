@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{410BE77E-9EDF-4F07-BAEF-EDE093F6B5AB}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>TagsCloudContiner</RootNamespace>
-    <AssemblyName>TagsCloudContiner</AssemblyName>
+    <RootNamespace>TagsCloudContainer</RootNamespace>
+    <AssemblyName>TagsCloudContainer</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -62,13 +62,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppTagsCloud.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AppTagsCloud.Designer.cs">
+      <DependentUpon>AppTagsCloud.cs</DependentUpon>
+    </Compile>
     <Compile Include="CircularCloudBuilder.cs" />
-    <Compile Include="CloudDrawer.cs" />
+    <Compile Include="PngDrawer.cs" />
     <Compile Include="GraphicsExtensions.cs" />
     <Compile Include="Interfaces\ICloudDrawer.cs" />
     <Compile Include="Interfaces\IFileReader.cs" />
     <Compile Include="Interfaces\ITagsCloudBuilder.cs" />
-    <Compile Include="Interfaces\IWordsProcessing.cs" />
     <Compile Include="LinqExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -86,18 +91,23 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\tdd\TagsCloudVisualization\TagsCloudVisualization.csproj">
-      <Project>{0145c5ff-47ba-418f-bcf7-85df4d64d90b}</Project>
-      <Name>TagsCloudVisualization</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Hunspellx64.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Hunspellx86.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AppTagsCloud.resx">
+      <DependentUpon>AppTagsCloud.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TagsCloudVisualization\TagsCloudVisualization.csproj">
+      <Project>{0145c5ff-47ba-418f-bcf7-85df4d64d90b}</Project>
+      <Name>TagsCloudVisualization</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
