@@ -6,6 +6,8 @@ namespace TagsCloudContainer.Interfaces
 {
     public interface ITagsCloudBuilder
     {
-        Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes, Point cloudCenter);
+        Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes);
+        IEnumerable<Size> WordsToSizes(IEnumerable<string> words, Graphics graphics);
+        Cloud<TextRectangle> ToTextRectangles(IEnumerable<string> words, Graphics graphics);
     }
 }

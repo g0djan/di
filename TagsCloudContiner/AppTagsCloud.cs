@@ -73,6 +73,7 @@ namespace TagsCloudContainer
             builder.RegisterType<TextFilter>().AsSelf();
             builder.RegisterType<TextParser>().AsSelf();
             builder.RegisterInstance(new Bitmap(Width, Height)).As<Bitmap>();
+            builder.Register(_ => new Point(Width / 2, Height / 2)).As<Point>();
             builder.Register(_ => Color.FromName((string) ColorsComboBox.SelectedItem)).As<Color>();
             builder.RegisterInstance(FilenameBox.Text).As<string>();
             builder.RegisterInstance(FontFamily.Families[FontsListBox.SelectedIndex]).As<FontFamily>();
@@ -366,20 +367,13 @@ namespace TagsCloudContainer
         {
             var bitmap = container.Resolve<Bitmap>();
             var graphics = Graphics.FromImage(bitmap);
-            var center = new Point(bitmap.Width / 2, bitmap.Height / 2);
             var filter = container.Resolve<TextFilter>();
             filter.AddBoringWords(boringWords);
             var textRectanglesCloud = container.Resolve<IFileReader>()
                 .ReadFile(container.Resolve<string>())
                 .ParseTextWith(container.Resolve<TextParser>())
                 .PreprocessingWith(filter)
-                .GroupBy(key => key)
-                .OrderByDescending(group => group.Count())
-                .ToTextRectanglesWith(
-                    container.Resolve<ITagsCloudBuilder>(),
-                    graphics,
-                    container.Resolve<FontFamily>(),
-                    center);
+                .GetCloudWith(container.Resolve<ITagsCloudBuilder>(), graphics);
             var drawer = container.Resolve<ICloudDrawer>();
             graphics.DrawWordsCloudWith(drawer, textRectanglesCloud);
             drawer.Save(bitmap);
