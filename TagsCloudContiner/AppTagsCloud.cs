@@ -13,22 +13,22 @@ namespace TagsCloudContainer
 {
     public partial class AppTagsCloud : Form
     {
-        private readonly List<Func<string, bool>> conditionSelector =
+        private static readonly List<Func<string, bool>> conditionSelector =
             new List<Func<string, bool>> {str => true};
 
-        private readonly List<Func<string, string>> formatingSelector =
+        private static readonly List<Func<string, string>> formatingSelector =
             new List<Func<string, string>> {str => str};
 
-        private readonly Dictionary<string, Type> readers =
+        private static readonly Dictionary<string, Type> readers =
             new Dictionary<string, Type> {["txt"] = typeof(TxtReader)};
 
-        private readonly List<Type> drawers =
+        private static readonly List<Type> drawers =
             new List<Type> {typeof(PngDrawer)};
 
-        private readonly List<Type> builders =
+        private static readonly List<Type> builders =
             new List<Type> {typeof(CircularCloudBuilder)};
 
-        private readonly HashSet<string> boringWords = new HashSet<string>();
+        private static readonly HashSet<string> boringWords = new HashSet<string>();
 
 
         public AppTagsCloud()
@@ -343,29 +343,24 @@ namespace TagsCloudContainer
             WordsFormatListBox.Items.Add(name);
         }
 
-        public void UpdateReaders(string name, Type readerType)
-        {
-            if (readerType ==  typeof(IFileReader))
-                readers.Add(name, readerType);
-        }
 
-        public void UpdateWriters(string name, Type drawerType)
+        private Dictionary<Type, Action<string, Type>> updaters = new Dictionary<Type, Action<string, Type>>
         {
-            if (drawerType == typeof(ICloudDrawer))
+            [typeof(IFileReader)] = (s, type) => readers.Add(s, type),
+            [typeof(ICloudDrawer)] = (s, type) => 
             {
-                drawers.Add(drawerType);
-                ImageFormatListBox.Items.Add(name);
+                drawers.Add(type);
+                ImageFormatListBox.Items.Add(s);
+            },
+            [typeof(ITagsCloudBuilder)] = (s, type) =>
+            {
+                builders.Add(type);
+                BuildAlgorithmListBox.Items.Add(s);
             }
-        }
 
-        public void UpdateBuilders(string name, Type builderType)
-        {
-            if (builderType == typeof(ITagsCloudBuilder))
-            {
-                builders.Add(builderType);
-                BuildAlgorithmListBox.Items.Add(name);
-            }
-        }
+        };
+
+        public void UpdateProgram(string str, Type type) => updaters[type](str, type);
 
         private void DrawTagsCloud(IContainer container, IEnumerable<string> boringWords)
         {
