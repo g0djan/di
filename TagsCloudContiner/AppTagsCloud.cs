@@ -37,8 +37,6 @@ namespace TagsCloudContainer
             DoubleBuffered = true;
             ClientSize = new Size(Picture.Location.X + Picture.Width, Picture.Height);
 
-            
-
             AddToBoringWordsButton.Click += (sender, args) => boringWords.Add(BoringWordsTextBox.Text);
             RemoveToBoringWordsButton.Click += (sender, args) => boringWords.Remove(BoringWordsTextBox.Text);
             BuildButton.Click += (sender, args) =>
@@ -332,6 +330,42 @@ namespace TagsCloudContainer
             Height = 512,
             Location = new Point(ImageFormatListBox.Location.X + ImageFormatListBox.Width + WidthBtwFields,0)
         };
+
+        public void UpdateConditions(string name, Func<string, bool> condition)
+        {
+            conditionSelector.Add(condition);
+            PartOfSpeechListBox.Items.Add(name);
+        }
+
+        public void UpdateModificator(string name, Func<string, string> modificator)
+        {
+            formatingSelector.Add(modificator);
+            WordsFormatListBox.Items.Add(name);
+        }
+
+        public void UpdateReaders(string name, Type readerType)
+        {
+            if (readerType ==  typeof(IFileReader))
+                readers.Add(name, readerType);
+        }
+
+        public void UpdateWriters(string name, Type drawerType)
+        {
+            if (drawerType == typeof(ICloudDrawer))
+            {
+                drawers.Add(drawerType);
+                ImageFormatListBox.Items.Add(name);
+            }
+        }
+
+        public void UpdateBuilders(string name, Type builderType)
+        {
+            if (builderType == typeof(ITagsCloudBuilder))
+            {
+                builders.Add(builderType);
+                BuildAlgorithmListBox.Items.Add(name);
+            }
+        }
 
         private void DrawTagsCloud(IContainer container, IEnumerable<string> boringWords)
         {

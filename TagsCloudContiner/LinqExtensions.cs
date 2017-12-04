@@ -10,7 +10,7 @@ namespace TagsCloudContainer
     public static class LinqExtensions
     {
         public static IEnumerable<string> PreprocessingWith(this IEnumerable<string> words,
-           TextFilter wordProcessor) =>
+            TextFilter wordProcessor) =>
             wordProcessor.WordsPreprocessing(words);
 
 
@@ -30,7 +30,8 @@ namespace TagsCloudContainer
             countedWords
                 .Zip(GetRectanglesCloud(countedWords, cloudBuilder, graphics, fontFamily, center),
                     (countedWord, rectangle) => new TextRectangle(countedWord.Key,
-                        GetFont(countedWord.Count(), fontFamily, countedWords.Count(), graphics, countedWord.Key.Length), rectangle))
+                        GetFont(countedWord.Count(), fontFamily, countedWords.Count(), graphics,
+                            countedWord.Key.Length), rectangle))
                 .ToCloud(center);
 
         private static Cloud<Rectangle> GetRectanglesCloud(
@@ -42,10 +43,12 @@ namespace TagsCloudContainer
             countedWords
                 .Select(countedWord =>
                     ToSize(countedWord.Key,
-                        GetFont(countedWord.Count(), fontFamily, countedWords.Count(), graphics, countedWord.Key.Length), graphics))
+                        GetFont(countedWord.Count(), fontFamily, countedWords.Count(), graphics,
+                            countedWord.Key.Length), graphics))
                 .BuildTagCloudWith(cloudBuilder, center);
 
-        private static Font GetFont(int countedWordCount, FontFamily fontFamily, int countedWordsCount, Graphics graphics, int wordLength) =>
+        private static Font GetFont(int countedWordCount, FontFamily fontFamily, int countedWordsCount,
+            Graphics graphics, int wordLength) =>
             new Font(fontFamily, GetFontSize(countedWordCount, countedWordsCount, graphics, wordLength));
 
         private static Cloud<Rectangle> BuildTagCloudWith(this IEnumerable<Size> sizes, ITagsCloudBuilder builder,
@@ -60,7 +63,7 @@ namespace TagsCloudContainer
             var s = Math.PI * d * d / 4;
             var frequency = (double) countThisWord / countAllWords;
             var vovelHeight = frequency * s / wordLength;
-            return (int)Math.Ceiling(vovelHeight);
+            return (int) Math.Ceiling(vovelHeight);
         }
 
         private static Size ToSize(string word, Font font, Graphics graphics) =>
