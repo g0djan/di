@@ -10,22 +10,8 @@ namespace TagsCloudContainer
 {
     public partial class AppTagsCloud : Form
     {
-        private static readonly List<Func<string, bool>> conditionSelector =
-            new List<Func<string, bool>> {str => true};
-
-        private static readonly List<Func<string, string>> formatingSelector =
-            new List<Func<string, string>> {str => str};
-
-        private static readonly Dictionary<string, Type> readers =
-            new Dictionary<string, Type> {["txt"] = typeof(TxtReader)};
-
-        private static readonly List<Type> drawers =
-            new List<Type> {typeof(PngDrawer)};
-
-        private static readonly List<Type> builders =
-            new List<Type> {typeof(CircularCloudBuilder)};
-
         private static readonly HashSet<string> boringWords = new HashSet<string>();
+        private static List<RegistringImplemetation> registring = new List<RegistringImplemetation>();
 
 
         public AppTagsCloud()
@@ -40,8 +26,8 @@ namespace TagsCloudContainer
             {
                 ColorsComboBox.SelectedIndex = ColorsComboBox.FindStringExact(ColorsComboBox.SelectedText);
                 Picture.Image = null;
-                var container = SetContainer();
-                Program.DrawTagsCloud(container, boringWords);
+                var container = Program.SetContainer(GetSettings(), registring);
+                Program.DrawTagsCloud(container, GetImplementationName(), boringWords);
                 using (var fs = new FileStream("cloud.png", FileMode.Open, FileAccess.Read))
                 using (var original = Image.FromStream(fs))
                     Picture.Image = new Bitmap(original);
@@ -61,27 +47,26 @@ namespace TagsCloudContainer
             });
         }
 
-        private IContainer SetContainer()
+        private ImplementationName GetImplementationName()
         {
-            var bitmap = new Bitmap(Width, Height);
-            var builder = new ContainerBuilder();
-            builder.RegisterType(ChooseIFileReader(FilenameBox.Text)).As<IFileReader>();
-            builder.RegisterType(builders[BuildAlgorithmListBox.SelectedIndex]).As<ITagsCloudBuilder>();
-            builder.RegisterType(drawers[ImageFormatListBox.SelectedIndex]).As<ITextRectanglesDrawer>();
-            builder.RegisterType<WordsEditor>().As<IWordsEditor>();
-            builder.RegisterInstance(bitmap).As<Bitmap, Image>();
-            builder.Register(_ => new Point(Width / 2, Height / 2)).As<Point>();
-            builder.Register(_ => Color.FromName((string) ColorsComboBox.SelectedItem)).As<Color>();
-            builder.RegisterInstance(FilenameBox.Text).As<string>();
-            builder.RegisterInstance(FontFamily.Families[FontsListBox.SelectedIndex]).As<FontFamily>();
-            builder.RegisterInstance(conditionSelector[PartOfSpeechListBox.SelectedIndex]).As<Func<string, bool>>();
-            builder.RegisterInstance(formatingSelector[WordsFormatListBox.SelectedIndex]).As<Func<string, string>>();
-            builder.Register(_ => Graphics.FromImage(bitmap)).As<Graphics>();
-            builder.RegisterType<TextParser>().As<ITextParser>();
-            builder.RegisterType<WordsBounder>().As<IWordsBounder>();
-            var container = builder.Build();
+            var parts = FilenameBox.Text.Split('.');
+            if (parts.Length != 2)
+                throw new ArgumentException();
+            var reader = parts[1];
+            var editor = (string) WordsFormatListBox.SelectedItem + ":" + (string) PartOfSpeechListBox.SelectedItem;
+            var builder = (string) BuildAlgorithmListBox.SelectedItem;
+            var drawer = (string) ImageFormatListBox.SelectedItem;
+            return new ImplementationName(reader, editor, builder, drawer);
+        }
 
-            return container;
+        private Settings GetSettings()
+        {
+            var color = Color.FromName((string) ColorsComboBox.SelectedItem);
+            var fontFamily = FontFamily.Families[FontsListBox.SelectedIndex];
+            var center = new Point(Width / 2, Height / 2);
+            var bitmap = new Bitmap(Width, Height);
+            var inputFileName = FilenameBox.Text;
+            return new Settings(color, fontFamily, center, bitmap, inputFileName);
         }
 
         private int Width
@@ -104,13 +89,6 @@ namespace TagsCloudContainer
             }
         }
 
-        private Type ChooseIFileReader(string filename)
-        {
-            var parts = filename.Split('.');
-            if (parts.Length != 2 || !readers.ContainsKey(parts[1]))
-                throw new ArgumentException();
-            return readers[parts[1]];
-        }
 
         private const int HeightBtwFields = 35;
         private const int HeightBtwLabelAndField = 15;
@@ -288,7 +266,8 @@ namespace TagsCloudContainer
             Width = 73,
             Height = 15,
             Font = DefaultFont,
-            Location = new Point(ColorsComboBox.Location.X + ColorsComboBox.Width + WidthBtwFields, ColorLabel.Location.Y)
+            Location = new Point(ColorsComboBox.Location.X + ColorsComboBox.Width + WidthBtwFields,
+                ColorLabel.Location.Y)
         };
 
         private static TextBox WidthBox { get; } = new TextBox
@@ -329,38 +308,36 @@ namespace TagsCloudContainer
         {
             Width = 512,
             Height = 512,
-            Location = new Point(ImageFormatListBox.Location.X + ImageFormatListBox.Width + WidthBtwFields,0)
+            Location = new Point(ImageFormatListBox.Location.X + ImageFormatListBox.Width + WidthBtwFields, 0)
         };
-
-        public void UpdateConditions(string name, Func<string, bool> condition)
-        {
-            conditionSelector.Add(condition);
-            PartOfSpeechListBox.Items.Add(name);
-        }
-
-        public void UpdateModificator(string name, Func<string, string> modificator)
-        {
-            formatingSelector.Add(modificator);
-            WordsFormatListBox.Items.Add(name);
-        }
-
 
         private Dictionary<Type, Action<string, Type>> updaters = new Dictionary<Type, Action<string, Type>>
         {
-            [typeof(IFileReader)] = (s, type) => readers.Add(s, type),
-            [typeof(ITextRectanglesDrawer)] = (s, type) => 
+            [typeof(ITextRectanglesDrawer)] = (s, type) =>
             {
-                drawers.Add(type);
+                registring.Add(new RegistringImplemetation(s, type));
                 ImageFormatListBox.Items.Add(s);
             },
             [typeof(ITagsCloudBuilder)] = (s, type) =>
             {
-                builders.Add(type);
+                registring.Add(new RegistringImplemetation(s, type));
                 BuildAlgorithmListBox.Items.Add(s);
             }
-
         };
 
-        public void UpdateProgram(string str, Type type) => updaters[type](str, type);
+        public void UpdateProgram(string str, Type type)
+        {
+            if (updaters.ContainsKey(type))
+                updaters[type](str, type);
+        }
+
+        public void UpdateWordsEditor(Type type, string editor = "No format", string filter = "All")
+        {
+            registring.Add(new RegistringImplemetation(editor + ":" + filter, type));
+            if (editor != "No format")
+                WordsFormatListBox.Items.Add(editor);
+            if (filter != "All")
+                PartOfSpeechListBox.Items.Add(filter);
+        }
     }
 }

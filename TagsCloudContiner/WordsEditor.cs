@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -14,17 +13,13 @@ namespace TagsCloudContainer
     public class WordsEditor : IWordsEditor
     {
         private readonly HashSet<string> boringWords;
-        private readonly Func<string, bool> partSpeechCondition;
-        private Func<string, string> WordEditor { get; }
 
-        public WordsEditor(Func<string, bool> partSpeechCondition, Func<string, string> wordEditor)
+        public WordsEditor()
         {
             var path = string.Join(
                 Path.DirectorySeparatorChar.ToString(),
                 "..", "..", "Resources", "stopwords.txt");
             boringWords = new HashSet<string>(File.ReadAllText(path).Split(' '));
-            this.partSpeechCondition = partSpeechCondition;
-            WordEditor = wordEditor;
         }
 
         public void AddBoringWords(IEnumerable<string> newBoringStrings) =>
@@ -32,8 +27,7 @@ namespace TagsCloudContainer
 
         public IEnumerable<string> EditWords(IEnumerable<string> words) =>
             words.Select(word => word.ToLower())
-                .Where(word => !boringWords.Contains(word) && partSpeechCondition(word))
-                .Select(WordEditor)
+                .Where(word => !boringWords.Contains(word))
                 .ToArray();
     }
 }

@@ -84,9 +84,11 @@
       <DependentUpon>AppTagsCloud.cs</DependentUpon>
     </Compile>
     <Compile Include="CircularCloudBuilder.cs" />
+    <Compile Include="ImplementationName.cs" />
     <Compile Include="PngDrawer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegistringImplemetation.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="WordsEditor.cs" />
     <Compile Include="TextParser.cs" />

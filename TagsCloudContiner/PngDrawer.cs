@@ -15,10 +15,10 @@ namespace TagsCloudContainer
         private Color Color { get; }
         private Graphics Graphics { get; }
 
-        public PngDrawer(Color color, Graphics graphics)
+        public PngDrawer(Settings settings)
         {
-            Color = color;
-            Graphics = graphics;
+            Color = settings.Color;
+            Graphics = settings.Graphics;
         }
 
         public void Draw(IEnumerable<TextRectangle> textRectangles)

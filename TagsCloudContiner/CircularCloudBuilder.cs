@@ -14,12 +14,12 @@ namespace TagsCloudContainer
     public class CircularCloudBuilder : ITagsCloudBuilder
     {
         private Point Center { get; }
-        private IWordsBounder Converter { get; }
+        private IWordsBounder WordsBounder { get; }
 
-        public CircularCloudBuilder(Point center, IWordsBounder converter)
+        public CircularCloudBuilder(Settings settings, IWordsBounder wordsBounder)
         {
-            Center = center;
-            Converter = converter;
+            Center = settings.Center;
+            WordsBounder = wordsBounder;
         }
 
         public Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes)
@@ -31,7 +31,7 @@ namespace TagsCloudContainer
         }
 
         public IEnumerable<TextRectangle> GetTextRectangles(IEnumerable<string> words) =>
-            GetTextRectangles(words, BuildCloud(Converter.ConvertWordsToSizes(words)));
+            GetTextRectangles(words, BuildCloud(WordsBounder.ConvertWordsToSizes(words)));
 
         private IEnumerable<TextRectangle> GetTextRectangles(
             IEnumerable<string> words,
@@ -40,6 +40,6 @@ namespace TagsCloudContainer
                 .GroupBy(key => key)
                 .OrderByDescending(group => group.Count())
                 .Zip(rectangles, (word, rectangle) =>
-                    new TextRectangle(word.Key, Converter.GetFont(word, words), rectangle));
+                    new TextRectangle(word.Key, WordsBounder.GetFont(word, words), rectangle));
     }
 }

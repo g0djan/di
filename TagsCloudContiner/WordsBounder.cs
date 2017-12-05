@@ -16,10 +16,10 @@ namespace TagsCloudContainer
         private FontFamily FontFamily { get; }
         private Graphics Graphics { get; }
 
-        public WordsBounder(FontFamily fontFamily, Graphics graphics)
+        public WordsBounder(Settings settings)
         {
-            FontFamily = fontFamily;
-            Graphics = graphics;
+            FontFamily = settings.FontFamily;
+            Graphics = settings.Graphics;
         }
 
         public IEnumerable<Size> ConvertWordsToSizes(IEnumerable<string> words) =>
