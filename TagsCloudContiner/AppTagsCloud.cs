@@ -3,15 +3,45 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using Autofac;
-using IContainer = Autofac.IContainer;
 
 namespace TagsCloudContainer
 {
     public partial class AppTagsCloud : Form
     {
+        private const int HeightBtwFields = 35;
+        private const int HeightBtwLabelAndField = 15;
+        private const int WidthBtwFields = 5;
         private static readonly HashSet<string> boringWords = new HashSet<string>();
-        private static List<RegistringImplemetation> registring = new List<RegistringImplemetation>();
+        private static List<ForRegister> registring = new List<ForRegister>();
+
+        private int Width
+        {
+            get
+            {
+                if (int.TryParse(WidthBox.Text, out var n))
+                    return n;
+                throw new ArgumentException();
+            }
+        }
+
+        private int Height
+        {
+            get
+            {
+                if (int.TryParse(HeightBox.Text, out var n))
+                    return n;
+                throw new ArgumentException();
+            }
+        }
+
+
+        private readonly Dictionary<Type, Action<string, Type>> updaters = new Dictionary<Type, Action<string, Type>>
+        {
+            [typeof(IWordsFilter)] = (s, type) => PartOfSpeechListBox.Items.Add(s),
+            [typeof(IWordsEditor)] = (s, type) => WordsFormatListBox.Items.Add(s),
+            [typeof(ITagsCloudBuilder)] = (s, type) => BuildAlgorithmListBox.Items.Add(s),
+            [typeof(ITextRectanglesDrawer)] = (s, type) => ImageFormatListBox.Items.Add(s)
+        };
 
 
         public AppTagsCloud()
@@ -53,10 +83,11 @@ namespace TagsCloudContainer
             if (parts.Length != 2)
                 throw new ArgumentException();
             var reader = parts[1];
-            var editor = (string) WordsFormatListBox.SelectedItem + ":" + (string) PartOfSpeechListBox.SelectedItem;
+            var filter = (string) PartOfSpeechListBox.SelectedItem;
+            var editor = (string) WordsFormatListBox.SelectedItem;
             var builder = (string) BuildAlgorithmListBox.SelectedItem;
             var drawer = (string) ImageFormatListBox.SelectedItem;
-            return new ImplementationName(reader, editor, builder, drawer);
+            return new ImplementationName(reader, filter, editor, builder, drawer);
         }
 
         private Settings GetSettings()
@@ -69,30 +100,15 @@ namespace TagsCloudContainer
             return new Settings(color, fontFamily, center, bitmap, inputFileName);
         }
 
-        private int Width
+        public void UpdateProgram(string str, Type type)
         {
-            get
+            if (updaters.ContainsKey(type))
             {
-                if (int.TryParse(WidthBox.Text, out var n))
-                    return n;
-                throw new ArgumentException();
+                updaters[type](str, type);
+                registring.Add(new ForRegister(str, type));
             }
         }
 
-        private int Height
-        {
-            get
-            {
-                if (int.TryParse(HeightBox.Text, out var n))
-                    return n;
-                throw new ArgumentException();
-            }
-        }
-
-
-        private const int HeightBtwFields = 35;
-        private const int HeightBtwLabelAndField = 15;
-        private const int WidthBtwFields = 5;
 
         private static Label FileNameLabel { get; } = new Label
         {
@@ -310,34 +326,5 @@ namespace TagsCloudContainer
             Height = 512,
             Location = new Point(ImageFormatListBox.Location.X + ImageFormatListBox.Width + WidthBtwFields, 0)
         };
-
-        private Dictionary<Type, Action<string, Type>> updaters = new Dictionary<Type, Action<string, Type>>
-        {
-            [typeof(ITextRectanglesDrawer)] = (s, type) =>
-            {
-                registring.Add(new RegistringImplemetation(s, type));
-                ImageFormatListBox.Items.Add(s);
-            },
-            [typeof(ITagsCloudBuilder)] = (s, type) =>
-            {
-                registring.Add(new RegistringImplemetation(s, type));
-                BuildAlgorithmListBox.Items.Add(s);
-            }
-        };
-
-        public void UpdateProgram(string str, Type type)
-        {
-            if (updaters.ContainsKey(type))
-                updaters[type](str, type);
-        }
-
-        public void UpdateWordsEditor(Type type, string editor = "No format", string filter = "All")
-        {
-            registring.Add(new RegistringImplemetation(editor + ":" + filter, type));
-            if (editor != "No format")
-                WordsFormatListBox.Items.Add(editor);
-            if (filter != "All")
-                PartOfSpeechListBox.Items.Add(filter);
-        }
     }
 }

@@ -1,33 +1,17 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace TagsCloudContainer
 {
     public interface IWordsEditor
     {
-        IEnumerable<string> EditWords(IEnumerable<string> words);
-        void AddBoringWords(IEnumerable<string> newBoringStrings);
+        IEnumerable<string> Edit(IEnumerable<string> words);
     }
 
     public class WordsEditor : IWordsEditor
     {
-        private readonly HashSet<string> boringWords;
-
-        public WordsEditor()
+        public IEnumerable<string> Edit(IEnumerable<string> words)
         {
-            var path = string.Join(
-                Path.DirectorySeparatorChar.ToString(),
-                "..", "..", "Resources", "stopwords.txt");
-            boringWords = new HashSet<string>(File.ReadAllText(path).Split(' '));
+            return words;
         }
-
-        public void AddBoringWords(IEnumerable<string> newBoringStrings) =>
-            newBoringStrings.ToList().ForEach(boringString => boringWords.Add(boringString));
-
-        public IEnumerable<string> EditWords(IEnumerable<string> words) =>
-            words.Select(word => word.ToLower())
-                .Where(word => !boringWords.Contains(word))
-                .ToArray();
     }
 }

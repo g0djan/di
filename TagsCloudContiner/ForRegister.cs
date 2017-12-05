@@ -2,12 +2,12 @@
 
 namespace TagsCloudContainer
 {
-    class RegistringImplemetation
+    class ForRegister
     {
         public string Name { get; }
         public Type Implementation { get; }
 
-        public RegistringImplemetation(string name, Type implementation)
+        public ForRegister(string name, Type implementation)
         {
             Name = name;
             Implementation = implementation;

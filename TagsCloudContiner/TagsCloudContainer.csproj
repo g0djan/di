@@ -88,9 +88,10 @@
     <Compile Include="PngDrawer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegistringImplemetation.cs" />
+    <Compile Include="ForRegister.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="WordsEditor.cs" />
+    <Compile Include="WordsFilter.cs" />
     <Compile Include="TextParser.cs" />
     <Compile Include="TextRectangle.cs" />
     <Compile Include="TxtReader.cs" />

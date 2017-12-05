@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Autofac;
@@ -17,24 +16,26 @@ namespace TagsCloudContainer
 
         public static void DrawTagsCloud(IContainer container, ImplementationName name, IEnumerable<string> boringWords)
         {
-            var filter = container.ResolveNamed<IWordsEditor>(name.WordsEditor);
+            var filter = container.ResolveNamed<IWordsFilter>(name.WordsFilter);
             filter.AddBoringWords(boringWords);
             var text = container.ResolveNamed<IFileReader>(name.Reader)
                 .ReadFile(container.Resolve<Settings>().InputPath);
             var words = container.Resolve<ITextParser>().GetWords(text);
-            words = filter.EditWords(words);
+            words = filter.FilterWords(words);
+            words = container.ResolveNamed<IWordsEditor>(name.WordsEditor).Edit(words);
             var textRectangles = container.ResolveNamed<ITagsCloudBuilder>(name.CloudBuilder).GetTextRectangles(words);
             var drawer = container.ResolveNamed<ITextRectanglesDrawer>(name.Drawer);
             drawer.Draw(textRectangles);
             drawer.Save(container.Resolve<Settings>().Bitmap);
         }
 
-        public static IContainer SetContainer(Settings settings, IEnumerable<RegistringImplemetation> toRegister)
+        public static IContainer SetContainer(Settings settings, IEnumerable<ForRegister> toRegister)
         {
             var builder = RegisterImplementations(toRegister);
             builder.RegisterType<TxtReader>().Named<IFileReader>("txt");
             builder.RegisterType<TextParser>().As<ITextParser>();
-            builder.RegisterType<WordsEditor>().Named<IWordsEditor>("No format:All");
+            builder.RegisterType<WordsFilter>().Named<IWordsFilter>("All");
+            builder.RegisterType<WordsEditor>().Named<IWordsEditor>("No format");
             builder.RegisterType<WordsBounder>().As<IWordsBounder>();
             builder.RegisterType<CircularCloudBuilder>().Named<ITagsCloudBuilder>("Circular");
             builder.RegisterType<PngDrawer>().Named<ITextRectanglesDrawer>("png");
@@ -42,22 +43,23 @@ namespace TagsCloudContainer
             return builder.Build();
         }
 
-        private static ContainerBuilder RegisterImplementations(IEnumerable<RegistringImplemetation> toRegister)
+        private static ContainerBuilder RegisterImplementations(IEnumerable<ForRegister> toRegister)
         {
             var builder = new ContainerBuilder();
-            builder = Registration<IFileReader>(builder, toRegister);
-            builder = Registration<IWordsEditor>(builder, toRegister);
-            builder = Registration<ITagsCloudBuilder>(builder, toRegister);
-            builder = Registration<ITextRectanglesDrawer>(builder, toRegister);
+            Registration<IFileReader>(builder, toRegister);
+            Registration<IWordsFilter>(builder, toRegister);
+            Registration<IWordsEditor>(builder, toRegister);
+            Registration<ITagsCloudBuilder>(builder, toRegister);
+            Registration<ITextRectanglesDrawer>(builder, toRegister);
             return builder;
         }
 
-        private static ContainerBuilder Registration<TInterface>(ContainerBuilder builder,
-            IEnumerable<RegistringImplemetation> toRegister)
+        private static void Registration<TInterface>(
+            ContainerBuilder builder,
+            IEnumerable<ForRegister> toRegister)
         {
             foreach (var registring in toRegister.Where(t => t.Implementation == typeof(TInterface)))
                 builder.RegisterType(registring.Implementation).Named<TInterface>(registring.Name);
-            return builder;
         }
     }
 }
