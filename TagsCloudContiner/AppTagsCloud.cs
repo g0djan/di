@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using Autofac;
-using TagsCloudContainer.Interfaces;
-using TagsCloudContiner;
 using IContainer = Autofac.IContainer;
 
 namespace TagsCloudContainer
@@ -44,7 +41,7 @@ namespace TagsCloudContainer
                 ColorsComboBox.SelectedIndex = ColorsComboBox.FindStringExact(ColorsComboBox.SelectedText);
                 Picture.Image = null;
                 var container = SetContainer();
-                DrawTagsCloud(container, boringWords);
+                Program.DrawTagsCloud(container, boringWords);
                 using (var fs = new FileStream("cloud.png", FileMode.Open, FileAccess.Read))
                 using (var original = Image.FromStream(fs))
                     Picture.Image = new Bitmap(original);
@@ -66,19 +63,22 @@ namespace TagsCloudContainer
 
         private IContainer SetContainer()
         {
+            var bitmap = new Bitmap(Width, Height);
             var builder = new ContainerBuilder();
             builder.RegisterType(ChooseIFileReader(FilenameBox.Text)).As<IFileReader>();
             builder.RegisterType(builders[BuildAlgorithmListBox.SelectedIndex]).As<ITagsCloudBuilder>();
-            builder.RegisterType(drawers[ImageFormatListBox.SelectedIndex]).As<ICloudDrawer>();
-            builder.RegisterType<TextFilter>().AsSelf();
-            builder.RegisterType<TextParser>().AsSelf();
-            builder.RegisterInstance(new Bitmap(Width, Height)).As<Bitmap>();
+            builder.RegisterType(drawers[ImageFormatListBox.SelectedIndex]).As<ITextRectanglesDrawer>();
+            builder.RegisterType<WordsEditor>().As<IWordsEditor>();
+            builder.RegisterInstance(bitmap).As<Bitmap, Image>();
             builder.Register(_ => new Point(Width / 2, Height / 2)).As<Point>();
             builder.Register(_ => Color.FromName((string) ColorsComboBox.SelectedItem)).As<Color>();
             builder.RegisterInstance(FilenameBox.Text).As<string>();
             builder.RegisterInstance(FontFamily.Families[FontsListBox.SelectedIndex]).As<FontFamily>();
             builder.RegisterInstance(conditionSelector[PartOfSpeechListBox.SelectedIndex]).As<Func<string, bool>>();
             builder.RegisterInstance(formatingSelector[WordsFormatListBox.SelectedIndex]).As<Func<string, string>>();
+            builder.Register(_ => Graphics.FromImage(bitmap)).As<Graphics>();
+            builder.RegisterType<TextParser>().As<ITextParser>();
+            builder.RegisterType<WordsBounder>().As<IWordsBounder>();
             var container = builder.Build();
 
             return container;
@@ -348,7 +348,7 @@ namespace TagsCloudContainer
         private Dictionary<Type, Action<string, Type>> updaters = new Dictionary<Type, Action<string, Type>>
         {
             [typeof(IFileReader)] = (s, type) => readers.Add(s, type),
-            [typeof(ICloudDrawer)] = (s, type) => 
+            [typeof(ITextRectanglesDrawer)] = (s, type) => 
             {
                 drawers.Add(type);
                 ImageFormatListBox.Items.Add(s);
@@ -362,21 +362,5 @@ namespace TagsCloudContainer
         };
 
         public void UpdateProgram(string str, Type type) => updaters[type](str, type);
-
-        private void DrawTagsCloud(IContainer container, IEnumerable<string> boringWords)
-        {
-            var bitmap = container.Resolve<Bitmap>();
-            var graphics = Graphics.FromImage(bitmap);
-            var filter = container.Resolve<TextFilter>();
-            filter.AddBoringWords(boringWords);
-            var textRectanglesCloud = container.Resolve<IFileReader>()
-                .ReadFile(container.Resolve<string>())
-                .ParseTextWith(container.Resolve<TextParser>())
-                .PreprocessingWith(filter)
-                .GetCloudWith(container.Resolve<ITagsCloudBuilder>(), graphics);
-            var drawer = container.Resolve<ICloudDrawer>();
-            graphics.DrawWordsCloudWith(drawer, textRectanglesCloud);
-            drawer.Save(bitmap);
-        }
     }
 }

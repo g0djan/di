@@ -1,29 +1,38 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
-using TagsCloudContainer.Interfaces;
-using TagsCloudVisualization;
 
 namespace TagsCloudContainer
 {
-    class PngDrawer : ICloudDrawer
+    public interface ITextRectanglesDrawer
     {
-        private Color color;
+        void Draw(IEnumerable<TextRectangle> textRectangles);
+        void Save(Bitmap bmp);
+    }
 
-        public PngDrawer(Color color)
+    class PngDrawer : ITextRectanglesDrawer
+    {
+        private Color Color { get; }
+        private Graphics Graphics { get; }
+
+        public PngDrawer(Color color, Graphics graphics)
         {
-            this.color = color;
+            Color = color;
+            Graphics = graphics;
         }
 
-        public void Draw(Cloud<TextRectangle> cloud, Graphics graphics)
+        public void Draw(IEnumerable<TextRectangle> textRectangles)
         {
             const TextFormatFlags flags = TextFormatFlags.WordBreak;
-            cloud.ForEach(textRectangle =>
-                TextRenderer.DrawText(graphics,
+            foreach (var textRectangle in textRectangles)
+            {
+                TextRenderer.DrawText(Graphics,
                     textRectangle.Word,
-                    textRectangle.Font, 
+                    textRectangle.Font,
                     textRectangle.Rectangle,
-                    color,
-                    flags));
+                    Color,
+                    flags);
+            }
         }
 
         public void Save(Bitmap bmp)
