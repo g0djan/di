@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using NUnit.Framework.Internal;
 
 namespace TagsCloudContainer
 {
@@ -9,6 +11,23 @@ namespace TagsCloudContainer
 
     class TxtReader : IFileReader
     {
-        public string ReadFile(string filename) => File.ReadAllText(filename);
+        private ILogger Logger { get; }
+
+        public TxtReader(ILogger logger)
+        {
+            Logger = logger;
+        }
+        public string ReadFile(string filename)
+        {
+            try
+            {
+                return File.ReadAllText(filename);
+            }
+            catch (FileNotFoundException e)
+            {
+                Logger.Debug(e.Message);
+                throw;
+            } 
+        }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Autofac;
+using NUnit.Framework.Internal;
 
 namespace TagsCloudContainer
 {
@@ -39,7 +41,9 @@ namespace TagsCloudContainer
             builder.RegisterType<WordsBounder>().As<IWordsBounder>();
             builder.RegisterType<CircularCloudBuilder>().Named<ITagsCloudBuilder>("Circular");
             builder.RegisterType<PngDrawer>().Named<ITextRectanglesDrawer>("png");
-            builder.RegisterInstance(settings).As<Settings>();            
+            builder.RegisterInstance(settings).As<Settings>();
+            builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null))
+                .As<ILogger>();
             return builder.Build();
         }
 
