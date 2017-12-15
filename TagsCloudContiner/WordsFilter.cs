@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using FluentAssertions;
-using Moq;
-using NUnit.Framework;
 
 namespace TagsCloudContainer
 {
@@ -19,7 +16,8 @@ namespace TagsCloudContainer
 
         public WordsFilter()
         {
-            var path = @"C:\Users\godja\OneDrive\Study\ШПоРа\di\TagsCloudContiner\Resources\stopwords.txt";
+            var path = string.Join(Path.DirectorySeparatorChar.ToString(), Directory.GetCurrentDirectory(), 
+                "..", "..", "Resources", "stopwords.txt");
             boringWords = new HashSet<string>(File.ReadAllText(path).Split(' '));
         }
 

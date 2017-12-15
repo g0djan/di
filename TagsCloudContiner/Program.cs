@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -42,6 +43,7 @@ namespace TagsCloudContainer
             builder.RegisterType<CircularCloudBuilder>().Named<ITagsCloudBuilder>("Circular");
             builder.RegisterType<PngDrawer>().Named<ITextRectanglesDrawer>("png");
             builder.RegisterInstance(settings).As<Settings>();
+            builder.Register(_ => settings.Center).As<Point>();
             builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null))
                 .As<ILogger>();
             return builder.Build();
@@ -50,15 +52,15 @@ namespace TagsCloudContainer
         private static ContainerBuilder RegisterImplementations(IEnumerable<ForRegister> toRegister)
         {
             var builder = new ContainerBuilder();
-            Registration<IFileReader>(builder, toRegister);
-            Registration<IWordsFilter>(builder, toRegister);
-            Registration<IWordsEditor>(builder, toRegister);
-            Registration<ITagsCloudBuilder>(builder, toRegister);
-            Registration<ITextRectanglesDrawer>(builder, toRegister);
+            Register<IFileReader>(builder, toRegister);
+            Register<IWordsFilter>(builder, toRegister);
+            Register<IWordsEditor>(builder, toRegister);
+            Register<ITagsCloudBuilder>(builder, toRegister);
+            Register<ITextRectanglesDrawer>(builder, toRegister);
             return builder;
         }
 
-        private static void Registration<TInterface>(
+        private static void Register<TInterface>(
             ContainerBuilder builder,
             IEnumerable<ForRegister> toRegister)
         {

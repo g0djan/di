@@ -15,19 +15,20 @@ namespace TagsCloudContainer
     {
         private Point Center { get; }
         private IWordsBounder WordsBounder { get; }
+        private CircularCloudLayouter CloudLayouter { get; }
 
-        public CircularCloudBuilder(Settings settings, IWordsBounder wordsBounder)
+        public CircularCloudBuilder(Settings settings, IWordsBounder wordsBounder, CircularCloudLayouter layouter)
         {
             Center = settings.Center;
+            CloudLayouter = layouter;
             WordsBounder = wordsBounder;
         }
 
         public Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes)
         {
-            var layouter = new CircularCloudLayouter(Center);
             foreach (var rectangleShape in rectangleShapes)
-                layouter.PutNextRectangle(rectangleShape);
-            return layouter.Cloud;
+                CloudLayouter.PutNextRectangle(rectangleShape);
+            return CloudLayouter.Cloud;
         }
 
         public IEnumerable<TextRectangle> GetTextRectangles(IEnumerable<string> words) =>
