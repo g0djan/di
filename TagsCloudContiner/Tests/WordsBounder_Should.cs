@@ -35,7 +35,7 @@ namespace TagsCloudContainer
         public void SizesDescendingWithWordsFrequency()
         {
             var wordBounder = new WordsBounder(settings);
-            var sizes = wordBounder.ConvertWordsToSizes(words).ToArray();
+            var sizes = wordBounder.ConvertWordsToSizes(words).GetValueOrThrow().ToArray();
             GetArea(sizes[0]).Should().BeGreaterOrEqualTo(GetArea(sizes[1]));
         }
 

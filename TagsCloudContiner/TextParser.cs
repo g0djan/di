@@ -1,19 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using ResultOf;
 
 namespace TagsCloudContainer
 {
     public interface ITextParser
     {
-        IEnumerable<string> GetWords(string text);
+        Result<IEnumerable<string>> GetWords(string text);
     }
 
     public class TextParser : ITextParser
     {
-        public IEnumerable<string> GetWords(string text)
+        public Result<IEnumerable<string>> GetWords(string text)
         {
-            var punctuation = text.Where(char.IsPunctuation).Distinct().ToArray();
-            return text.Split().Select(x => x.Trim(punctuation));
+            return Result.Of(() =>
+            {
+                var punctuation = text.Where(char.IsPunctuation).Distinct().ToArray();
+                return text.Split().Select(x => x.Trim(punctuation));
+            });
         }
     }
 }

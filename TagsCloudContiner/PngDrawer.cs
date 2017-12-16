@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -26,6 +27,7 @@ namespace TagsCloudContainer
             const TextFormatFlags flags = TextFormatFlags.WordBreak;
             foreach (var textRectangle in textRectangles)
             {
+                IsRectangleInBounds(textRectangle);
                 TextRenderer.DrawText(Graphics,
                     textRectangle.Word,
                     textRectangle.Font,
@@ -33,6 +35,15 @@ namespace TagsCloudContainer
                     Color,
                     flags);
             }
+        }
+
+        private void IsRectangleInBounds(TextRectangle textRectangle)
+        {
+            if (textRectangle.Rectangle.Left < Graphics.VisibleClipBounds.Left ||
+                textRectangle.Rectangle.Bottom > Graphics.VisibleClipBounds.Bottom ||
+                textRectangle.Rectangle.Right > Graphics.VisibleClipBounds.Right ||
+                textRectangle.Rectangle.Top < Graphics.VisibleClipBounds.Top)
+                throw new Exception("Cloud is so big for this window");
         }
 
         public void Save(Bitmap bmp)

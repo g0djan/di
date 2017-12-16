@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ResultOf;
 
 namespace TagsCloudContainer
 {
     public interface IWordsFilter
     {
-        IEnumerable<string> FilterWords(IEnumerable<string> words);
+        Result<IEnumerable<string>> FilterWords(IEnumerable<string> words);
         void AddBoringWords(IEnumerable<string> newBoringStrings);
     }
 
@@ -16,7 +18,7 @@ namespace TagsCloudContainer
 
         public WordsFilter()
         {
-            var path = string.Join(Path.DirectorySeparatorChar.ToString(), Directory.GetCurrentDirectory(), 
+            var path = string.Join(Path.DirectorySeparatorChar.ToString(), Directory.GetCurrentDirectory(),
                 "..", "..", "Resources", "stopwords.txt");
             boringWords = new HashSet<string>(File.ReadAllText(path).Split(' '));
         }
@@ -24,9 +26,10 @@ namespace TagsCloudContainer
         public void AddBoringWords(IEnumerable<string> newBoringStrings) =>
             newBoringStrings.ToList().ForEach(boringString => boringWords.Add(boringString));
 
-        public IEnumerable<string> FilterWords(IEnumerable<string> words) =>
-            words.Select(word => word.ToLower())
-                .Where(word => !boringWords.Contains(word))
-                .ToArray();
+        public Result<IEnumerable<string>> FilterWords(IEnumerable<string> words)
+        {
+            return Result.Of(() =>
+                words.Select(word => word.ToLower()).Where(word => !boringWords.Contains(word)));
+        }
     }
 }

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using ResultOf;
 
 namespace TagsCloudContainer
 {
     public interface IWordsBounder
     {
-        IEnumerable<Size> ConvertWordsToSizes(IEnumerable<string> words);
-        Font GetFont(IGrouping<string, string> word, IEnumerable<string> words);
+        Result<IEnumerable<Size>> ConvertWordsToSizes(IEnumerable<string> words);
+        Result<Font> GetFont(IGrouping<string, string> word, IEnumerable<string> words);
     }
 
     public class WordsBounder : IWordsBounder
@@ -22,18 +23,18 @@ namespace TagsCloudContainer
             Graphics = settings.Graphics;
         }
 
-        public IEnumerable<Size> ConvertWordsToSizes(IEnumerable<string> words) =>
-            words
+        public Result<IEnumerable<Size>> ConvertWordsToSizes(IEnumerable<string> words) =>
+            Result.Of(() => words
                 .GroupBy(key => key)
                 .OrderByDescending(group => group.Count())
-                .Select(word => GetSize(word.Key, GetFont(word, words)));
+                .Select(word => GetSize(word.Key, GetFont(word, words).GetValueOrThrow())));
 
-        public Font GetFont(IGrouping<string, string> word, IEnumerable<string> words) =>
-            GetFont(GetFontSize(
+        public Result<Font> GetFont(IGrouping<string, string> word, IEnumerable<string> words) =>
+            Result.Of(() => GetFont(GetFontSize(
                 word.Count(),
                 words.Count(),
                 word.Key.Length,
-                GetMinImageDimension()));
+                GetMinImageDimension())));
 
         private int GetMinImageDimension() => (int) Math.Min(Graphics.DpiX, Graphics.DpiY);
 

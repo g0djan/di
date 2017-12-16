@@ -1,17 +1,15 @@
 ﻿using System.Collections.Generic;
+using ResultOf;
 
 namespace TagsCloudContainer
 {
     public interface IWordsEditor
     {
-        IEnumerable<string> Edit(IEnumerable<string> words);
+        Result<IEnumerable<string>> Edit(IEnumerable<string> words);
     }
 
     public class WordsEditor : IWordsEditor
     {
-        public IEnumerable<string> Edit(IEnumerable<string> words)
-        {
-            return words;
-        }
+        public Result<IEnumerable<string>> Edit(IEnumerable<string> words) => Result.Ok(words);
     }
 }

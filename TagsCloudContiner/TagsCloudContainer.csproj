@@ -124,6 +124,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ErrorHandling\ErrorHandling.csproj">
+      <Project>{c83b0a70-dba6-45bf-a792-fd2b14528ebb}</Project>
+      <Name>ErrorHandling</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TagsCloudVisualization\TagsCloudVisualization.csproj">
       <Project>{0145c5ff-47ba-418f-bcf7-85df4d64d90b}</Project>
       <Name>TagsCloudVisualization</Name>

@@ -2,6 +2,7 @@
 using System.Drawing;
 using Moq;
 using NUnit.Framework;
+using ResultOf;
 using TagsCloudVisualization;
 
 namespace TagsCloudContainer
@@ -28,7 +29,7 @@ namespace TagsCloudContainer
             var mock = new Mock<ITagsCloudBuilder>();
             var bounder = new Mock<IWordsBounder>();
             mock.Setup(builder => builder.GetTextRectangles(It.IsAny<IEnumerable<string>>()))
-                .Returns(It.IsAny<IEnumerable<TextRectangle>>());
+                .Returns(It.IsAny<Result<IEnumerable<TextRectangle>>>());
             new CircularCloudBuilder(Settings, bounder.Object, Layouter).GetTextRectangles(Words);
             bounder.Verify(bd => bd.ConvertWordsToSizes(Words));
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using ResultOf;
 
 namespace TagsCloudContainer
 {
@@ -14,25 +15,13 @@ namespace TagsCloudContainer
         private static readonly HashSet<string> boringWords = new HashSet<string>();
         private static List<ForRegister> registring = new List<ForRegister>();
 
-        private int Width
-        {
-            get
-            {
-                if (int.TryParse(WidthBox.Text, out var n))
-                    return n;
-                throw new ArgumentException();
-            }
-        }
+        private Result<int> Width => int.TryParse(WidthBox.Text, out var n) && n > 0 && n <= Picture.Height
+            ? Result.Ok(n)
+            : Result.Fail<int>("Incorrect width, try use positive integer number");
 
-        private int Height
-        {
-            get
-            {
-                if (int.TryParse(HeightBox.Text, out var n))
-                    return n;
-                throw new ArgumentException();
-            }
-        }
+        private Result<int> Height => int.TryParse(HeightBox.Text, out var n) && n > 0 && n <= Picture.Width
+            ? Result.Ok(n) 
+            : Result.Fail<int>("Incorrect height, try use positive integer number");
 
 
         private readonly Dictionary<Type, Action<string, Type>> updaters = new Dictionary<Type, Action<string, Type>>
@@ -56,8 +45,8 @@ namespace TagsCloudContainer
             {
                 ColorsComboBox.SelectedIndex = ColorsComboBox.FindStringExact(ColorsComboBox.SelectedText);
                 Picture.Image = null;
-                var container = Program.SetContainer(GetSettings(), registring);
-                Program.DrawTagsCloud(container, GetImplementationName(), boringWords);
+                var container = Program.SetContainer(GetSettings().GetValueOrThrow(), registring);
+                Program.DrawTagsCloud(container, GetImplementationName().GetValueOrThrow(), boringWords);
                 using (var fs = new FileStream("cloud.png", FileMode.Open, FileAccess.Read))
                 using (var original = Image.FromStream(fs))
                     Picture.Image = new Bitmap(original);
@@ -77,27 +66,37 @@ namespace TagsCloudContainer
             });
         }
 
-        private ImplementationName GetImplementationName()
+        private Result<ImplementationName> GetImplementationName()
         {
             var parts = FilenameBox.Text.Split('.');
             if (parts.Length != 2)
-                throw new ArgumentException();
+                return Result.Fail<ImplementationName>("filename, should contain extension");
             var reader = parts[1];
             var filter = (string) PartOfSpeechListBox.SelectedItem;
             var editor = (string) WordsFormatListBox.SelectedItem;
             var builder = (string) BuildAlgorithmListBox.SelectedItem;
             var drawer = (string) ImageFormatListBox.SelectedItem;
-            return new ImplementationName(reader, filter, editor, builder, drawer);
+            return Result.Ok(new ImplementationName(reader, filter, editor, builder, drawer));
         }
 
-        private Settings GetSettings()
+        private Result<Settings> GetSettings()
         {
-            var color = Color.FromName((string) ColorsComboBox.SelectedItem);
-            var fontFamily = FontFamily.Families[FontsListBox.SelectedIndex];
-            var center = new Point(Width / 2, Height / 2);
-            var bitmap = new Bitmap(Width, Height);
-            var inputFileName = FilenameBox.Text;
-            return new Settings(color, fontFamily, center, bitmap, inputFileName);
+            try
+            {
+                var color = Color.FromName((string)ColorsComboBox.SelectedItem);
+                var fontFamily = FontFamily.Families[FontsListBox.SelectedIndex];
+                var width = Width.GetValueOrThrow();
+                var height = Height.GetValueOrThrow();
+                var center = new Point(width / 2, height / 2);
+                var bitmap = new Bitmap(width, height);
+                var inputFileName = FilenameBox.Text;
+                return Result.Ok(new Settings(color, fontFamily, center, bitmap, inputFileName));
+            }
+            catch (Exception e)
+            {
+                return Result.Fail<Settings>(e.Message);
+            }
+            
         }
 
         public void UpdateProgram(string str, Type type)
@@ -320,7 +319,7 @@ namespace TagsCloudContainer
             Height = 30
         };
 
-        private PictureBox Picture { get; } = new PictureBox
+        private static PictureBox Picture { get; } = new PictureBox
         {
             Width = 512,
             Height = 512,

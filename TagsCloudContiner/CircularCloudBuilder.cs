@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using ResultOf;
 using TagsCloudVisualization;
 
 namespace TagsCloudContainer
 {
     public interface ITagsCloudBuilder
     {
-        Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes);
-        IEnumerable<TextRectangle> GetTextRectangles(IEnumerable<string> words);
+        Result<Cloud<Rectangle>> BuildCloud(IEnumerable<Size> rectangleShapes);
+        Result<IEnumerable<TextRectangle>> GetTextRectangles(IEnumerable<string> words);
     }
 
     public class CircularCloudBuilder : ITagsCloudBuilder
@@ -24,15 +25,22 @@ namespace TagsCloudContainer
             WordsBounder = wordsBounder;
         }
 
-        public Cloud<Rectangle> BuildCloud(IEnumerable<Size> rectangleShapes)
+        public Result<Cloud<Rectangle>> BuildCloud(IEnumerable<Size> rectangleShapes)
         {
-            foreach (var rectangleShape in rectangleShapes)
-                CloudLayouter.PutNextRectangle(rectangleShape);
-            return CloudLayouter.Cloud;
+            return Result.Of(() =>
+            {
+                foreach (var rectangleShape in rectangleShapes)
+                    CloudLayouter.PutNextRectangle(rectangleShape);
+                return CloudLayouter.Cloud;
+            });
         }
 
-        public IEnumerable<TextRectangle> GetTextRectangles(IEnumerable<string> words) =>
-            GetTextRectangles(words, BuildCloud(WordsBounder.ConvertWordsToSizes(words)));
+        public Result<IEnumerable<TextRectangle>> GetTextRectangles(IEnumerable<string> words) =>
+            Result.Of(() =>
+            {
+                var rectangles = BuildCloud(WordsBounder.ConvertWordsToSizes(words).GetValueOrThrow());
+                return GetTextRectangles(words, rectangles.GetValueOrThrow());
+            });
 
         private IEnumerable<TextRectangle> GetTextRectangles(
             IEnumerable<string> words,
@@ -41,6 +49,6 @@ namespace TagsCloudContainer
                 .GroupBy(key => key)
                 .OrderByDescending(group => group.Count())
                 .Zip(rectangles, (word, rectangle) =>
-                    new TextRectangle(word.Key, WordsBounder.GetFont(word, words), rectangle));
+                    new TextRectangle(word.Key, WordsBounder.GetFont(word, words).GetValueOrThrow(), rectangle));
     }
 }

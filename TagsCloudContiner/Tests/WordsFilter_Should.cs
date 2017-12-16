@@ -14,7 +14,7 @@ namespace TagsCloudContainer
             var words = new[] { "kek", "aviasales", "richbich" };
             var filter = new WordsFilter();
             filter.AddBoringWords(words.Take(2));
-            filter.FilterWords(words).ToArray().Should().BeEquivalentTo(words[2]);
+            filter.FilterWords(words).GetValueOrThrow().ToArray().Should().BeEquivalentTo(words[2]);
         }
     }
 }

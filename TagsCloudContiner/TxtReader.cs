@@ -1,11 +1,12 @@
 ﻿using System.IO;
 using NUnit.Framework.Internal;
+using ResultOf;
 
 namespace TagsCloudContainer
 {
     interface IFileReader
     {
-        string ReadFile(string filename);
+        Result<string> ReadFile(string filename);
     }
 
     class TxtReader : IFileReader
@@ -16,17 +17,18 @@ namespace TagsCloudContainer
         {
             Logger = logger;
         }
-        public string ReadFile(string filename)
+        public Result<string> ReadFile(string filename)
         {
-            try
-            {
-                return File.ReadAllText(filename);
-            }
-            catch (FileNotFoundException e)
-            {
-                Logger.Debug(e.Message);
-                throw;
-            } 
+            return Result.Of(() => File.ReadAllText(filename));
+//            try
+//            {
+//                return File.ReadAllText(filename);
+//            }
+//            catch (FileNotFoundException e)
+//            {
+//                Logger.Debug(e.Message);
+//                throw;
+//            } 
         }
     }
 }

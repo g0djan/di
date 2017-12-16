@@ -6,6 +6,8 @@ using System.Linq;
 using System.Windows.Forms;
 using Autofac;
 using NUnit.Framework.Internal;
+using ResultOf;
+using TagsCloudVisualization;
 
 namespace TagsCloudContainer
 {
@@ -21,14 +23,14 @@ namespace TagsCloudContainer
         {
             var filter = container.ResolveNamed<IWordsFilter>(name.WordsFilter);
             filter.AddBoringWords(boringWords);
-            var text = container.ResolveNamed<IFileReader>(name.Reader)
-                .ReadFile(container.Resolve<Settings>().InputPath);
-            var words = container.Resolve<ITextParser>().GetWords(text);
-            words = filter.FilterWords(words);
-            words = container.ResolveNamed<IWordsEditor>(name.WordsEditor).Edit(words);
-            var textRectangles = container.ResolveNamed<ITagsCloudBuilder>(name.CloudBuilder).GetTextRectangles(words);
+            var textRectangles = container.ResolveNamed<IFileReader>(name.Reader)
+                .ReadFile(container.Resolve<Settings>().InputPath)
+                .Then(container.Resolve<ITextParser>().GetWords)
+                .Then(filter.FilterWords)
+                .Then(container.ResolveNamed<IWordsEditor>(name.WordsEditor).Edit)
+                .Then(container.ResolveNamed<ITagsCloudBuilder>(name.CloudBuilder).GetTextRectangles);
             var drawer = container.ResolveNamed<ITextRectanglesDrawer>(name.Drawer);
-            drawer.Draw(textRectangles);
+            drawer.Draw(textRectangles.GetValueOrThrow());
             drawer.Save(container.Resolve<Settings>().Bitmap);
         }
 
@@ -42,10 +44,10 @@ namespace TagsCloudContainer
             builder.RegisterType<WordsBounder>().As<IWordsBounder>();
             builder.RegisterType<CircularCloudBuilder>().Named<ITagsCloudBuilder>("Circular");
             builder.RegisterType<PngDrawer>().Named<ITextRectanglesDrawer>("png");
+            builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null)).As<ILogger>();
             builder.RegisterInstance(settings).As<Settings>();
+            builder.RegisterType<CircularCloudLayouter>().AsSelf();
             builder.Register(_ => settings.Center).As<Point>();
-            builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null))
-                .As<ILogger>();
             return builder.Build();
         }
 
