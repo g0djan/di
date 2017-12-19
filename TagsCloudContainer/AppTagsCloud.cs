@@ -46,7 +46,7 @@ namespace TagsCloudContainer
                 ColorsComboBox.SelectedIndex = ColorsComboBox.FindStringExact(ColorsComboBox.SelectedText);
                 Picture.Image = null;
                 var container = Program.SetContainer(GetSettings().GetValueOrThrow(), registring);
-                Program.DrawTagsCloud(container, GetImplementationName().GetValueOrThrow(), boringWords);
+                Program.DrawTagsCloud(container.GetValueOrThrow(), GetImplementationName().GetValueOrThrow(), boringWords);
                 using (var fs = new FileStream("cloud.png", FileMode.Open, FileAccess.Read))
                 using (var original = Image.FromStream(fs))
                     Picture.Image = new Bitmap(original);
@@ -89,7 +89,7 @@ namespace TagsCloudContainer
                 var height = Height.GetValueOrThrow();
                 var center = new Point(width / 2, height / 2);
                 var bitmap = new Bitmap(width, height);
-                var inputFileName = FilenameBox.Text;
+                var inputFileName = Path.Combine("..", "..", "Resources", FilenameBox.Text);
                 return Result.Ok(new Settings(color, fontFamily, center, bitmap, inputFileName));
             }
             catch (Exception e)

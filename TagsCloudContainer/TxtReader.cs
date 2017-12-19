@@ -20,15 +20,6 @@ namespace TagsCloudContainer
         public Result<string> ReadFile(string filename)
         {
             return Result.Of(() => File.ReadAllText(filename));
-//            try
-//            {
-//                return File.ReadAllText(filename);
-//            }
-//            catch (FileNotFoundException e)
-//            {
-//                Logger.Debug(e.Message);
-//                throw;
-//            } 
         }
     }
 }

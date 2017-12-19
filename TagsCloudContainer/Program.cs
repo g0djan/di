@@ -9,6 +9,7 @@ using NUnit.Framework.Internal;
 using ResultOf;
 using TagsCloudVisualization;
 
+
 namespace TagsCloudContainer
 {
     static class Program
@@ -34,9 +35,9 @@ namespace TagsCloudContainer
             drawer.Save(container.Resolve<Settings>().Bitmap);
         }
 
-        public static IContainer SetContainer(Settings settings, IEnumerable<ForRegister> toRegister)
+        public static Result<IContainer> SetContainer(Settings settings, IEnumerable<ForRegister> toRegister) => Result.Of(() =>
         {
-            var builder = RegisterImplementations(toRegister);
+            var builder = RegisterImplementations(toRegister).GetValueOrThrow();
             builder.RegisterType<TxtReader>().Named<IFileReader>("txt");
             builder.RegisterType<TextParser>().As<ITextParser>();
             builder.RegisterType<WordsFilter>().Named<IWordsFilter>("All");
@@ -44,30 +45,32 @@ namespace TagsCloudContainer
             builder.RegisterType<WordsBounder>().As<IWordsBounder>();
             builder.RegisterType<CircularCloudBuilder>().Named<ITagsCloudBuilder>("Circular");
             builder.RegisterType<PngDrawer>().Named<ITextRectanglesDrawer>("png");
-            builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null)).As<ILogger>();
+            builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null))
+                .As<ILogger>();
             builder.RegisterInstance(settings).As<Settings>();
             builder.RegisterType<CircularCloudLayouter>().AsSelf();
             builder.Register(_ => settings.Center).As<Point>();
             return builder.Build();
-        }
+        });
 
-        private static ContainerBuilder RegisterImplementations(IEnumerable<ForRegister> toRegister)
+        private static Result<ContainerBuilder> RegisterImplementations(IEnumerable<ForRegister> toRegister)
         {
             var builder = new ContainerBuilder();
-            Register<IFileReader>(builder, toRegister);
-            Register<IWordsFilter>(builder, toRegister);
-            Register<IWordsEditor>(builder, toRegister);
-            Register<ITagsCloudBuilder>(builder, toRegister);
-            Register<ITextRectanglesDrawer>(builder, toRegister);
-            return builder;
+            return Register<IFileReader>(builder, toRegister)
+                .Then(b => Register<IWordsFilter>(b, toRegister))
+                .Then(b => Register<IWordsEditor>(b, toRegister))
+                .Then(b => Register<ITagsCloudBuilder>(b, toRegister))
+                .Then(b => Register<ITextRectanglesDrawer>(b, toRegister));
         }
 
-        private static void Register<TInterface>(
+        private static Result<ContainerBuilder> Register<TInterface>(
             ContainerBuilder builder,
-            IEnumerable<ForRegister> toRegister)
-        {
-            foreach (var registring in toRegister.Where(t => t.Implementation == typeof(TInterface)))
-                builder.RegisterType(registring.Implementation).Named<TInterface>(registring.Name);
-        }
+            IEnumerable<ForRegister> toRegister) =>
+            Result.Of(() =>
+            {
+                foreach (var registring in toRegister.Where(t => t.Implementation == typeof(TInterface)))
+                    builder.RegisterType(registring.Implementation).Named<TInterface>(registring.Name);
+                return builder;
+            });
     }
 }

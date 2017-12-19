@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 using static System.Math;
 
 namespace TagsCloudVisualization
@@ -12,21 +13,23 @@ namespace TagsCloudVisualization
     public class CircularCloudLayouter_Should
     {
         private CircularCloudLayouter layouter;
+        private CloudDrawer drawer;
 
 
         [SetUp]
         public void SetUp()
         {
-            layouter = new CircularCloudLayouter(new Point(0, 0));
+            drawer = new CloudDrawer(1024, 1024);
+            layouter = new CircularCloudLayouter(new Point(drawer.Width / 2, drawer.Height / 2));
         }
 
         [TearDown]
         public void TearDown()
         {
-            if (TestContext.CurrentContext.Result.FailCount == 0) return;
-            var path = Path.Combine(@"C:\Users\godja\Downloads\tdd\TagsCloudVisualization\TestPictures",
+            if (!Equals(TestContext.CurrentContext.Result.Outcome, ResultState.Failure)) return;
+            var path = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(TestContext.CurrentContext.TestDirectory)),
+                "TestPictures",
                 TestContext.CurrentContext.Test.Name + ".bmp");
-            var drawer = new CloudDrawer();
             var bitmap = drawer.Draw(layouter);
             bitmap.Save(path);
             Console.WriteLine("Tag cloud visualization saved to file {0}", path);
@@ -50,10 +53,10 @@ namespace TagsCloudVisualization
         public void SeveralRectanglesDoesNotIntersect()
         {
             var random = new Random();
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 100; i++)
             {
-                var r1 = 30 + random.Next() % 50;
-                var r2 = 30 + random.Next() % 50;
+                var r1 = 50 + random.Next() % 50;
+                var r2 = 50 + random.Next() % 50;
                 layouter.PutNextRectangle(new Size(r1, r2));
             }
             layouter.Cloud.Any(rectangle1 =>
