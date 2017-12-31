@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using System.Linq;
-using FractalPainting.App.Actions;
 using FractalPainting.Infrastructure.Common;
 
 namespace FractalPainting.App.Fractals

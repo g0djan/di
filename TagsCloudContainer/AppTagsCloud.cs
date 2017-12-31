@@ -17,11 +17,11 @@ namespace TagsCloudContainer
 
         private Result<int> Width => int.TryParse(WidthBox.Text, out var n) && n > 0 && n <= Picture.Height
             ? Result.Ok(n)
-            : Result.Fail<int>("Incorrect width, try use positive integer number");
+            : Result.Fail<int>($"Incorrect width, try use number from interval [0;{Picture.Height}]");
 
         private Result<int> Height => int.TryParse(HeightBox.Text, out var n) && n > 0 && n <= Picture.Width
             ? Result.Ok(n) 
-            : Result.Fail<int>("Incorrect height, try use positive integer number");
+            : Result.Fail<int>($"Incorrect height, try use number from interval [0;{Picture.Height}]");
 
 
         private readonly Dictionary<Type, Action<string, Type>> updaters = new Dictionary<Type, Action<string, Type>>
@@ -45,7 +45,14 @@ namespace TagsCloudContainer
             {
                 ColorsComboBox.SelectedIndex = ColorsComboBox.FindStringExact(ColorsComboBox.SelectedText);
                 Picture.Image = null;
-                var container = Program.SetContainer(GetSettings().GetValueOrThrow(), registring);
+                var settings = GetSettings();
+                if (!settings.IsSuccess)
+                {
+                    ErrorLabel.Text = settings.Error;
+                    return;
+                }
+                ErrorLabel.Text = "";
+                var container = Program.SetContainer(settings.GetValueOrThrow(), registring);
                 Program.DrawTagsCloud(container.GetValueOrThrow(), GetImplementationName().GetValueOrThrow(), boringWords);
                 using (var fs = new FileStream("cloud.png", FileMode.Open, FileAccess.Read))
                 using (var original = Image.FromStream(fs))
@@ -62,6 +69,7 @@ namespace TagsCloudContainer
                 ColorsComboBox, ColorLabel,
                 WidthLabel, WidthBox, HeightLabel, HeightBox,
                 BuildButton,
+                ErrorLabel,
                 Picture
             });
         }
@@ -81,8 +89,12 @@ namespace TagsCloudContainer
 
         private Result<Settings> GetSettings()
         {
-            try
-            {
+            if (!Width.IsSuccess)
+                return Result.Fail<Settings>(Width.Error);
+            if (!Height.IsSuccess)
+                return Result.Fail<Settings>(Height.Error);
+            return Result.Of(() => 
+            { 
                 var color = Color.FromName((string)ColorsComboBox.SelectedItem);
                 var fontFamily = FontFamily.Families[FontsListBox.SelectedIndex];
                 var width = Width.GetValueOrThrow();
@@ -90,12 +102,8 @@ namespace TagsCloudContainer
                 var center = new Point(width / 2, height / 2);
                 var bitmap = new Bitmap(width, height);
                 var inputFileName = Path.Combine("..", "..", "Resources", FilenameBox.Text);
-                return Result.Ok(new Settings(color, fontFamily, center, bitmap, inputFileName));
-            }
-            catch (Exception e)
-            {
-                return Result.Fail<Settings>(e.Message);
-            }
+                return new Settings(color, fontFamily, center, bitmap, inputFileName);
+            });
             
         }
 
@@ -317,6 +325,15 @@ namespace TagsCloudContainer
             Location = new Point(ColorsComboBox.Location.X, ColorsComboBox.Location.Y + HeightBtwFields),
             Width = 256,
             Height = 30
+        };
+
+        private static Label ErrorLabel { get; } = new Label
+        {
+            Text = "",
+            Font = DefaultFont,
+            Location = new Point(BuildButton.Location.X, BuildButton.Location.Y + HeightBtwFields),
+            Width = 256,
+            Height = 50
         };
 
         private static PictureBox Picture { get; } = new PictureBox
