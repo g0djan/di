@@ -8,7 +8,7 @@
   * Размер изображения
   * Фильтрация исходного текста(словарь запрещенных слов, определенные части речи)
 
-
+Запускать TagsCloudContainer.exe
 
 План презентации
   1. Краткое описание
@@ -21,7 +21,7 @@
   ├── TagsCloudVisualization
   └── ErrorHandling
       └── ...
-      
+
   __Summary__: 3 directories, n files, m line numer
   ```
   4. Использование DI-контейнера
