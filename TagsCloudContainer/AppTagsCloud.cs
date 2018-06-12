@@ -15,11 +15,11 @@ namespace TagsCloudContainer
         private static readonly HashSet<string> boringWords = new HashSet<string>();
         private static List<ForRegister> registring = new List<ForRegister>();
 
-        private Result<int> Width => int.TryParse(WidthBox.Text, out var n) && n > 0 && n <= Picture.Height
+        private Result<int> Width => int.TryParse(WidthBox.Text, out var n) && n > 0 
             ? Result.Ok(n)
             : Result.Fail<int>($"Incorrect width, try use number from interval [0;{Picture.Height}]");
 
-        private Result<int> Height => int.TryParse(HeightBox.Text, out var n) && n > 0 && n <= Picture.Width
+        private Result<int> Height => int.TryParse(HeightBox.Text, out var n) && n > 0
             ? Result.Ok(n) 
             : Result.Fail<int>($"Incorrect height, try use number from interval [0;{Picture.Height}]");
 
@@ -53,10 +53,15 @@ namespace TagsCloudContainer
                 }
                 ErrorLabel.Text = "";
                 var container = Program.SetContainer(settings.GetValueOrThrow(), registring);
-                Program.DrawTagsCloud(container.GetValueOrThrow(), GetImplementationName().GetValueOrThrow(), boringWords);
+                var drawResult = Result.OfAction(() => Program.DrawTagsCloud(container.GetValueOrThrow(), GetImplementationName().GetValueOrThrow(), boringWords));
+                if (!drawResult.IsSuccess)
+                {
+                    ErrorLabel.Text = drawResult.Error;
+                    return;
+                }
                 using (var fs = new FileStream("cloud.png", FileMode.Open, FileAccess.Read))
                 using (var original = Image.FromStream(fs))
-                    Picture.Image = new Bitmap(original);
+                    Picture.Image = new Bitmap(original, 512, 512);
             };
             Controls.AddRange(new Control[]
             {
