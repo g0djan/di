@@ -15,12 +15,43 @@
   2. Точки расширения
   3. Структура проекта
   ```
-  ├── TagsCloudContainer
-  |   ├──
-  |   └── ...
-  ├── TagsCloudVisualization
-  └── ErrorHandling
-      └── ...
+  ├── TagCloudBuilder
+  |   ├── Domain
+  |   |   ├── CircularCloudBuilder
+  |   |   ├── CircularCloudLayouter
+  |   |   ├── Cloud
+  |   |   ├── PngDrawer
+  |   |   ├── Settings
+  |   |   ├── TextParser
+  |   |   ├── TextRectangle
+  |   |   ├── TxtReader
+  |   |   ├── WordsBounder
+  |   |   ├── WordsEditor
+  |   |   └── WordsFilter
+  |   └── Infrastructure
+  |      ├── ParseResultExtensions
+  |      ├── PointExtensions
+  |      ├── Quarter
+  |      ├── Result
+  |      └── ResultQueryExpressionExtensions
+  ├── TagCloudBuilder.App
+  |   ├── Resourses
+  |   |   ├── stopwords.txt
+  |   |   └── ...(тексты ввода)
+  |   ├── AppTagCloud
+  |   ├── ForRegister
+  |   ├── ImplementationName
+  |   └── Program
+  └── TagCloudBuilder.Tests
+      ├── CircularCloudBuilder_Should
+      ├── CircularCloudLayouter_Should
+      ├── CloudDrawer
+      ├── Result_Should
+      ├── ResultQueryExpression_Should
+      ├── TxtReaderShould
+      └── WordsFilterShould
+
+
 
   __Summary__: 3 directories, n files, m line numer
   ```

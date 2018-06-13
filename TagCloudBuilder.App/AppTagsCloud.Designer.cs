@@ -1,6 +1,6 @@
 ﻿namespace TagCloudBuilder.App
 {
-    partial class AppTagsCloud
+    partial class AppTagCloud
     {
         /// <summary>
         /// Required designer variable.
@@ -30,13 +30,13 @@
         {
             this.SuspendLayout();
             // 
-            // AppTagsCloud
+            // AppTagCloud
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(274, 229);
-            this.Name = "AppTagsCloud";
-            this.Text = "AppTagsCloud";
+            this.Name = "AppTagCloud";
+            this.Text = "AppTagCloud";
             this.ResumeLayout(false);
 
         }

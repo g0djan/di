@@ -22,14 +22,14 @@ namespace TagCloudBuilder.Tests
         public void SetUp()
         {
             drawer = new CloudDrawer(1024, 1024);
-            layouter = new CircularCloudLayouter(new Point(drawer.Width / 2, drawer.Height / 2));
+            layouter = new CircularCloudLayouter(new Point(0, 0));//drawer.Width / 2, drawer.Height / 2));
         }
 
         [TearDown]
         public void TearDown()
         {
             if (!Equals(TestContext.CurrentContext.Result.Outcome, ResultState.Failure)) return;
-            var path = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(TestContext.CurrentContext.TestDirectory)),
+            var path = Path.Combine(Path.GetDirectoryName(TestContext.CurrentContext.TestDirectory),
                 "TestPictures",
                 TestContext.CurrentContext.Test.Name + ".bmp");
             var bitmap = drawer.Draw(layouter);
@@ -78,7 +78,7 @@ namespace TagCloudBuilder.Tests
         [TestCase(0,0, ExpectedResult = Quarter.XandYNonPositive)]
         public Quarter TestGetQuarter(int x, int y)
         {
-            return new Point(x, y).GetQuarter(layouter.Cloud.Center);
+            return new Point(x, y).GetQuarter(new Point(0, 0));
         }
 
         [TestCase(PI / 4, 1, 1)]

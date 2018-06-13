@@ -7,9 +7,15 @@ using static System.Math;
 
 namespace TagCloudBuilder.Domain
 {
-    public class CircularCloudLayouter
+    public interface ITagCloudLayouter
     {
-        public readonly Cloud<Rectangle> Cloud;
+        Rectangle PutNextRectangle(Size rectangleSize);
+        Cloud<Rectangle> Cloud { get; }
+    }
+
+    public class CircularCloudLayouter : ITagCloudLayouter
+    {
+        public Cloud<Rectangle> Cloud { get; }
         private int radius;
         private readonly Dictionary<Quarter, Func<Rectangle, Point>> shifts;
         private double angle;
@@ -20,6 +26,20 @@ namespace TagCloudBuilder.Domain
             radius = 1;
             shifts = InitShifts();
             angle = 0d;
+        }
+
+        public Rectangle PutNextRectangle(Size rectangleSize)
+        {
+            if (!Cloud.Any())
+            {
+                var rectPlaced = new Point((int) (Cloud.Center.X - rectangleSize.Width / 2d),
+                    (int) (Cloud.Center.Y - rectangleSize.Height / 2d));
+                var rectangle = new Rectangle(rectPlaced, rectangleSize);
+                Cloud.Add(rectangle);
+                return rectangle;
+            }
+            Cloud.Add(FindNextRectangle(rectangleSize));
+            return Cloud.Last();
         }
 
         private Dictionary<Quarter, Func<Rectangle, Point>> InitShifts()
@@ -38,20 +58,6 @@ namespace TagCloudBuilder.Domain
             return rectangle => new Point(
                 rectangle.X - (isDx ? 1 : 0) * rectangle.Width, 
                 rectangle.Y - (isDy ? 1 : 0) * rectangle.Height);
-        }
-
-        public Rectangle PutNextRectangle(Size rectangleSize)
-        {
-            if (!Cloud.Any())
-            {
-                var rectPlaced = new Point((int) (Cloud.Center.X - rectangleSize.Width / 2d),
-                    (int) (Cloud.Center.Y - rectangleSize.Height / 2d));
-                var rectangle = new Rectangle(rectPlaced, rectangleSize);
-                Cloud.Add(rectangle);
-                return rectangle;
-            }
-            Cloud.Add(FindNextRectangle(rectangleSize));
-            return Cloud.Last();
         }
 
         private Rectangle FindNextRectangle(Size rectangleSize)
@@ -98,6 +104,7 @@ namespace TagCloudBuilder.Domain
         }
 
         //For test
+
         public Point GetNearestToCenterCornerPoint(double angle, int r, Size size)
         {
             this.angle = angle;

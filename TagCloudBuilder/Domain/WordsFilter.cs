@@ -18,8 +18,6 @@ namespace TagCloudBuilder.Domain
         public WordsFilter()
         {
             var path = Path.Combine("..", "..", "..", "TagCloudBuilder.App", "Resources", "stopwords.txt");
-//            var path = string.Join(Path.DirectorySeparatorChar.ToString(), ,
-//                "..", "..", "Resources", "stopwords.txt");
             boringWords = new HashSet<string>(File.ReadAllText(path).Split(' '));
         }
 

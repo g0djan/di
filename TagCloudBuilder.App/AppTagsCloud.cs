@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -8,33 +7,23 @@ using TagCloudBuilder.Infrastructure;
 
 namespace TagCloudBuilder.App
 {
-    public partial class AppTagsCloud : Form
+    public partial class AppTagCloud : Form
     {
         private const int HeightBtwFields = 35;
         private const int HeightBtwLabelAndField = 15;
         private const int WidthBtwFields = 5;
         private static readonly HashSet<string> boringWords = new HashSet<string>();
-        private static List<ForRegister> registring = new List<ForRegister>();
 
-        private Result<int> Width => int.TryParse(WidthBox.Text, out var n) && n > 0 
+        private Result<int> Width => int.TryParse(WidthBox.Text, out var n) && n > 0
             ? Result.Ok(n)
             : Result.Fail<int>($"Incorrect width, try use number from interval [0;{Picture.Height}]");
 
         private Result<int> Height => int.TryParse(HeightBox.Text, out var n) && n > 0
-            ? Result.Ok(n) 
+            ? Result.Ok(n)
             : Result.Fail<int>($"Incorrect height, try use number from interval [0;{Picture.Height}]");
 
 
-        private readonly Dictionary<Type, Action<string, Type>> updaters = new Dictionary<Type, Action<string, Type>>
-        {
-            [typeof(IWordsFilter)] = (s, type) => PartOfSpeechListBox.Items.Add(s),
-            [typeof(IWordsEditor)] = (s, type) => WordsFormatListBox.Items.Add(s),
-            [typeof(ITagsCloudBuilder)] = (s, type) => BuildAlgorithmListBox.Items.Add(s),
-            [typeof(ITextRectanglesDrawer)] = (s, type) => ImageFormatListBox.Items.Add(s)
-        };
-
-
-        public AppTagsCloud()
+        public AppTagCloud()
         {
             InitializeComponent();
             DoubleBuffered = true;
@@ -52,14 +41,19 @@ namespace TagCloudBuilder.App
                     ErrorLabel.Text = settings.Error;
                     return;
                 }
+
                 ErrorLabel.Text = "";
-                var container = Program.SetContainer(settings.GetValueOrThrow(), registring);
-                var drawResult = Result.OfAction(() => Program.DrawTagsCloud(container.GetValueOrThrow(), GetImplementationName().GetValueOrThrow(), boringWords));
+                var container = Program.SetContainer(settings.GetValueOrThrow());
+                var drawResult = Result.OfAction(
+                    () => Program.DrawTagCloud(container.GetValueOrThrow(),
+                        GetImplementationName().GetValueOrThrow(),
+                        boringWords));
                 if (!drawResult.IsSuccess)
                 {
                     ErrorLabel.Text = drawResult.Error;
                     return;
                 }
+
                 using (var fs = new FileStream("cloud.png", FileMode.Open, FileAccess.Read))
                 using (var original = Image.FromStream(fs))
                     Picture.Image = new Bitmap(original, 512, 512);
@@ -99,9 +93,9 @@ namespace TagCloudBuilder.App
                 return Result.Fail<Settings>(Width.Error);
             if (!Height.IsSuccess)
                 return Result.Fail<Settings>(Height.Error);
-            return Result.Of(() => 
-            { 
-                var color = Color.FromName((string)ColorsComboBox.SelectedItem);
+            return Result.Of(() =>
+            {
+                var color = Color.FromName((string) ColorsComboBox.SelectedItem);
                 var fontFamily = FontFamily.Families[FontsListBox.SelectedIndex];
                 var width = Width.GetValueOrThrow();
                 var height = Height.GetValueOrThrow();
@@ -110,16 +104,6 @@ namespace TagCloudBuilder.App
                 var inputFileName = Path.Combine("..", "..", "Resources", FilenameBox.Text);
                 return new Settings(color, fontFamily, center, bitmap, inputFileName);
             });
-            
-        }
-
-        public void UpdateProgram(string str, Type type)
-        {
-            if (updaters.ContainsKey(type))
-            {
-                updaters[type](str, type);
-                registring.Add(new ForRegister(str, type));
-            }
         }
 
 
@@ -304,7 +288,7 @@ namespace TagCloudBuilder.App
             Width = 73,
             Height = 29,
             Location = new Point(WidthLabel.Location.X, WidthLabel.Location.Y + HeightBtwLabelAndField),
-            Text = "512"
+            Text = "1024"
         };
 
         private static Label HeightLabel { get; } = new Label
@@ -321,7 +305,7 @@ namespace TagCloudBuilder.App
             Width = 73,
             Height = 29,
             Location = new Point(HeightLabel.Location.X, HeightLabel.Location.Y + HeightBtwLabelAndField),
-            Text = "512"
+            Text = "1024"
         };
 
         private static Button BuildButton { get; } = new Button

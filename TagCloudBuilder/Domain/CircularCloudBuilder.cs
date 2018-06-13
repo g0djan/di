@@ -5,19 +5,19 @@ using TagCloudBuilder.Infrastructure;
 
 namespace TagCloudBuilder.Domain
 {
-    public interface ITagsCloudBuilder
+    public interface ITagCloudBuilder
     {
         Result<Cloud<Rectangle>> BuildCloud(IEnumerable<Size> rectangleShapes);
         Result<IEnumerable<TextRectangle>> GetTextRectangles(IEnumerable<string> words);
     }
 
-    public class CircularCloudBuilder : ITagsCloudBuilder
+    public class CircularCloudBuilder : ITagCloudBuilder
     {
         private Point Center { get; }
         private IWordsBounder WordsBounder { get; }
-        private CircularCloudLayouter CloudLayouter { get; }
+        private ITagCloudLayouter CloudLayouter { get; }
 
-        public CircularCloudBuilder(Settings settings, IWordsBounder wordsBounder, CircularCloudLayouter layouter)
+        public CircularCloudBuilder(Settings settings, IWordsBounder wordsBounder, ITagCloudLayouter layouter)
         {
             Center = settings.Center;
             CloudLayouter = layouter;

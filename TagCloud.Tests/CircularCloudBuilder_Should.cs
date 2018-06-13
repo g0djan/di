@@ -26,7 +26,7 @@ namespace TagCloudBuilder.Tests
         [Test]
         public void BoundWords_DuringBuildCloud()
         {
-            var mock = new Mock<ITagsCloudBuilder>();
+            var mock = new Mock<ITagCloudBuilder>();
             var bounder = new Mock<IWordsBounder>();
             mock.Setup(builder => builder.GetTextRectangles(It.IsAny<IEnumerable<string>>()))
                 .Returns(It.IsAny<Result<IEnumerable<TextRectangle>>>());
