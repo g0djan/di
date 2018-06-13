@@ -48,7 +48,7 @@ namespace TagCloudBuilder.App
                 builder.RegisterType<WordsFilter>().Named<IWordsFilter>("All");
                 builder.RegisterType<WordsEditor>().Named<IWordsEditor>("No format");
                 builder.RegisterType<WordsBounder>().As<IWordsBounder>();
-                builder.RegisterType<CircularCloudBuilder>().As<ITagCloudBuilder>();
+                builder.RegisterType<CloudBuilder>().As<ITagCloudBuilder>();
                 builder.RegisterType<PngDrawer>().Named<ITextRectanglesDrawer>("png");
                 builder.RegisterType<CircularCloudLayouter>().Named<ITagCloudLayouter>("Circular");
                 builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null))

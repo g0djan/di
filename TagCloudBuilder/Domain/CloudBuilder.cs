@@ -11,13 +11,13 @@ namespace TagCloudBuilder.Domain
         Result<IEnumerable<TextRectangle>> GetTextRectangles(IEnumerable<string> words);
     }
 
-    public class CircularCloudBuilder : ITagCloudBuilder
+    public class CloudBuilder : ITagCloudBuilder
     {
         private Point Center { get; }
         private IWordsBounder WordsBounder { get; }
         private ITagCloudLayouter CloudLayouter { get; }
 
-        public CircularCloudBuilder(Settings settings, IWordsBounder wordsBounder, ITagCloudLayouter layouter)
+        public CloudBuilder(Settings settings, IWordsBounder wordsBounder, ITagCloudLayouter layouter)
         {
             Center = settings.Center;
             CloudLayouter = layouter;

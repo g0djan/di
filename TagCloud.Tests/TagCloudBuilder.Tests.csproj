@@ -60,7 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CircularCloudBuilder_Should.cs" />
+    <Compile Include="CloudBuilder_Should.cs" />
     <Compile Include="CircularCloudLayouter_Should.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>

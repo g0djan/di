@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Domain\CircularCloudBuilder.cs" />
+    <Compile Include="Domain\CloudBuilder.cs" />
     <Compile Include="Domain\CircularCloudLayouter.cs" />
     <Compile Include="Domain\Cloud.cs" />
     <Compile Include="Domain\PngDrawer.cs" />

@@ -8,7 +8,7 @@ using TagCloudBuilder.Infrastructure;
 namespace TagCloudBuilder.Tests
 {
     [TestFixture]
-    public class CircularCloudBuilder_Should
+    public class CloudBuilder_Should
     {
         private string[] Words { get; set; }
         private Settings Settings { get; set; }
@@ -30,7 +30,7 @@ namespace TagCloudBuilder.Tests
             var bounder = new Mock<IWordsBounder>();
             mock.Setup(builder => builder.GetTextRectangles(It.IsAny<IEnumerable<string>>()))
                 .Returns(It.IsAny<Result<IEnumerable<TextRectangle>>>());
-            new CircularCloudBuilder(Settings, bounder.Object, Layouter).GetTextRectangles(Words);
+            new CloudBuilder(Settings, bounder.Object, Layouter).GetTextRectangles(Words);
             bounder.Verify(bd => bd.ConvertWordsToSizes(Words));
         }
     }
