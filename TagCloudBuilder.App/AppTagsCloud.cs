@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Autofac;
+using Autofac.Core;
 using TagCloudBuilder.Domain;
 using TagCloudBuilder.Infrastructure;
 
@@ -47,7 +48,7 @@ namespace TagCloudBuilder.App
 
                 ErrorLabel.Text = "";
                 var drawResult = Result.OfAction(
-                    () => Program.DrawTagCloud(container,
+                    () => DrawTagCloud(container,
                         GetImplementationName().GetValueOrThrow(),
                         boringWords, settings.GetValueOrThrow()));
                 if (!drawResult.IsSuccess)
@@ -74,6 +75,31 @@ namespace TagCloudBuilder.App
                 ErrorLabel,
                 Picture
             });
+        }
+
+        private void DrawTagCloud(IContainer container,
+            ImplementationName name,
+            IEnumerable<string> boringWords,
+            Settings settings)
+        {
+            var filter = container.ResolveNamed<IWordsFilter>(name.WordsFilter);
+            filter.AddBoringWords(boringWords);
+            var parameterSettings = new ResolvedParameter((pi, ctx) => pi.Name == "settings",
+                (pi, ctx) => settings);
+            var parameterLayouter = new ResolvedParameter((pi, ctx) => pi.Name == "layouter",
+                (pi, ctx) => container.ResolveNamed<ITagCloudLayouter>(name.CloudLayouter, parameterSettings));
+            var parameterBounder = new ResolvedParameter((pi, ctx) => pi.Name == "wordsBounder",
+                (pi, ctx) => container.Resolve<IWordsBounder>(parameterSettings));
+            var textRectangles = container.ResolveNamed<IFileReader>(name.Reader, parameterSettings)
+                .ReadFile(settings.InputPath)
+                .Then(container.Resolve<ITextParser>().GetWords)
+                .Then(filter.FilterWords)
+                .Then(container.ResolveNamed<IWordsEditor>(name.WordsEditor).Edit)
+                .Then(container.Resolve<ITagCloudBuilder>(parameterBounder, parameterLayouter, parameterSettings)
+                    .GetTextRectangles);
+            var drawer = container.ResolveNamed<ITextRectanglesDrawer>(name.Drawer, parameterSettings);
+            drawer.Draw(textRectangles.GetValueOrThrow());
+            drawer.Save(settings.Bitmap);
         }
 
         private Result<ImplementationName> GetImplementationName()

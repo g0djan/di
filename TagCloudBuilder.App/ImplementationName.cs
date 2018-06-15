@@ -2,7 +2,7 @@
 
 namespace TagCloudBuilder.App
 {
-    class ImplementationName
+    public class ImplementationName
     {
         private static readonly Dictionary<string, string> nameToImplementationName = new Dictionary<string, string>()
         {
