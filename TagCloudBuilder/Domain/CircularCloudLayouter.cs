@@ -15,17 +15,22 @@ namespace TagCloudBuilder.Domain
 
     public class CircularCloudLayouter : ITagCloudLayouter
     {
-        public Cloud<Rectangle> Cloud { get; }
+        public Cloud<Rectangle> Cloud { get; private set; }
         private int radius;
         private readonly Dictionary<Quarter, Func<Rectangle, Point>> shifts;
         private double angle;
 
-        public CircularCloudLayouter(Point center)
+        public CircularCloudLayouter(Settings settings)
         {
-            Cloud = new Cloud<Rectangle>(center);
+            Cloud = new Cloud<Rectangle>(settings.Center);
             radius = 1;
             shifts = InitShifts();
             angle = 0d;
+        }
+
+        public void Setup(Settings settings)
+        {
+            Cloud = new Cloud<Rectangle>(settings.Center);
         }
 
         public Rectangle PutNextRectangle(Size rectangleSize)
@@ -38,6 +43,7 @@ namespace TagCloudBuilder.Domain
                 Cloud.Add(rectangle);
                 return rectangle;
             }
+
             Cloud.Add(FindNextRectangle(rectangleSize));
             return Cloud.Last();
         }
@@ -56,7 +62,7 @@ namespace TagCloudBuilder.Domain
         private static Func<Rectangle, Point> GetShift(bool isDx, bool isDy)
         {
             return rectangle => new Point(
-                rectangle.X - (isDx ? 1 : 0) * rectangle.Width, 
+                rectangle.X - (isDx ? 1 : 0) * rectangle.Width,
                 rectangle.Y - (isDy ? 1 : 0) * rectangle.Height);
         }
 
@@ -65,8 +71,8 @@ namespace TagCloudBuilder.Domain
             while (true)
             {
                 var placeForRectangle = GetPointsCircleWithoutCollisions(radius, rectangleSize)
-                    .Select(point => new { point, rectangle = new Rectangle(point, rectangleSize) })
-                    .FirstOrDefault(namedTuple => 
+                    .Select(point => new {point, rectangle = new Rectangle(point, rectangleSize)})
+                    .FirstOrDefault(namedTuple =>
                         Cloud.All(cloudRectangle => !cloudRectangle.IntersectsWith(namedTuple.rectangle)))?
                     .point;
                 if (placeForRectangle.HasValue)
@@ -91,6 +97,7 @@ namespace TagCloudBuilder.Domain
                 yield return Cloud.Center;
                 yield break;
             }
+
             var shiftAngle = 1d / r;
             for (; angle < 2 * PI; angle += shiftAngle)
                 yield return GetNearestToCenterCornerPoint(r, rectangleSize);
@@ -112,5 +119,3 @@ namespace TagCloudBuilder.Domain
         }
     }
 }
-
-    

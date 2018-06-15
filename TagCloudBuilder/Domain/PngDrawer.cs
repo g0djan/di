@@ -13,15 +13,15 @@ namespace TagCloudBuilder.Domain
 
     public class PngDrawer : ITextRectanglesDrawer
     {
-        private Color Color { get; }
-        private Graphics Graphics { get; }
+        private Color Color { get; set; }
+        private Graphics Graphics { get; set; }
 
         public PngDrawer(Settings settings)
         {
             Color = settings.Color;
             Graphics = settings.Graphics;
         }
-
+        
         public void Draw(IEnumerable<TextRectangle> textRectangles)
         {
             const TextFormatFlags flags = TextFormatFlags.WordBreak;

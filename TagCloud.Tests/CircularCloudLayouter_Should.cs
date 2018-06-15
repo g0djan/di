@@ -22,7 +22,7 @@ namespace TagCloudBuilder.Tests
         public void SetUp()
         {
             drawer = new CloudDrawer(1024, 1024);
-            layouter = new CircularCloudLayouter(new Point(0, 0));//drawer.Width / 2, drawer.Height / 2));
+            layouter = new CircularCloudLayouter();//drawer.Width / 2, drawer.Height / 2));
         }
 
         [TearDown]
@@ -42,7 +42,7 @@ namespace TagCloudBuilder.Tests
         public void CenterFirstRectangle_Should_Be_InIntegerCloudCenter(
             int width, int height, int expectedX, int expectedY)
         {
-            layouter = new CircularCloudLayouter(new Point(1, 1));
+            layouter = new CircularCloudLayouter();
             var size = new Size(width, height);
             layouter.PutNextRectangle(size);
             layouter.Cloud

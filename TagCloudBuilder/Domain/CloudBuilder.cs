@@ -13,11 +13,11 @@ namespace TagCloudBuilder.Domain
 
     public class CloudBuilder : ITagCloudBuilder
     {
-        private Point Center { get; }
+        private Point Center { get; set; }
         private IWordsBounder WordsBounder { get; }
         private ITagCloudLayouter CloudLayouter { get; }
 
-        public CloudBuilder(Settings settings, IWordsBounder wordsBounder, ITagCloudLayouter layouter)
+        public CloudBuilder(IWordsBounder wordsBounder, ITagCloudLayouter layouter, Settings settings)
         {
             Center = settings.Center;
             CloudLayouter = layouter;

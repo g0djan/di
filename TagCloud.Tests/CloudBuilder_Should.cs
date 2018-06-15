@@ -20,7 +20,7 @@ namespace TagCloudBuilder.Tests
             Words = new[] {"a"};
             Settings = new Settings(
                 Color.AliceBlue, FontFamily.GenericMonospace, new Point(), new Bitmap(10, 10), "");
-            Layouter = new CircularCloudLayouter(Settings.Center);
+            Layouter = new CircularCloudLayouter();
         }
 
         [Test]
@@ -30,7 +30,7 @@ namespace TagCloudBuilder.Tests
             var bounder = new Mock<IWordsBounder>();
             mock.Setup(builder => builder.GetTextRectangles(It.IsAny<IEnumerable<string>>()))
                 .Returns(It.IsAny<Result<IEnumerable<TextRectangle>>>());
-            new CloudBuilder(Settings, bounder.Object, Layouter).GetTextRectangles(Words);
+            new CloudBuilder(bounder.Object, Layouter, TODO).GetTextRectangles(Words);
             bounder.Verify(bd => bd.ConvertWordsToSizes(Words));
         }
     }

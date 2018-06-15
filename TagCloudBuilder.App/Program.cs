@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using TagCloudBuilder.Domain;
 using TagCloudBuilder.Infrastructure;
@@ -17,56 +17,46 @@ namespace TagCloudBuilder.App
         [STAThread]
         static void Main()
         {
-            Application.Run(new AppTagCloud());
+            var container = SetContainer();
+            Application.Run(new AppTagCloud(container.GetValueOrThrow()));
         }
 
         public static void DrawTagCloud(IContainer container,
             ImplementationName name,
-            IEnumerable<string> boringWords)
+            IEnumerable<string> boringWords,
+            Settings settings)
         {
             var filter = container.ResolveNamed<IWordsFilter>(name.WordsFilter);
             filter.AddBoringWords(boringWords);
-            var namedLayouter = new ResolvedParameter((pi, ctx) => pi.Name == "layouter",
-                (pi, ctx) => container.ResolveNamed<ITagCloudLayouter>(name.CloudLayouter));
-            var textRectangles = container.ResolveNamed<IFileReader>(name.Reader)
-                .ReadFile(container.Resolve<Settings>().InputPath)
+            var parameterSettings = new ResolvedParameter((pi, ctx) => pi.Name == "settings",
+                (pi, ctx) => settings);
+            var parameterLayouter = new ResolvedParameter((pi, ctx) => pi.Name == "layouter",
+                (pi, ctx) => container.ResolveNamed<ITagCloudLayouter>(name.CloudLayouter, parameterSettings));
+            var parameterBounder = new ResolvedParameter((pi, ctx) => pi.Name == "wordsBounder",
+                (pi, ctx) => container.Resolve<IWordsBounder>(parameterSettings));
+            var textRectangles = container.ResolveNamed<IFileReader>(name.Reader, parameterSettings)
+                .ReadFile(settings.InputPath)
                 .Then(container.Resolve<ITextParser>().GetWords)
                 .Then(filter.FilterWords)
                 .Then(container.ResolveNamed<IWordsEditor>(name.WordsEditor).Edit)
-                .Then(container.Resolve<ITagCloudBuilder>(namedLayouter).GetTextRectangles);
-            var drawer = container.ResolveNamed<ITextRectanglesDrawer>(name.Drawer);
+                .Then(container.Resolve<ITagCloudBuilder>(parameterBounder, parameterLayouter, parameterSettings)
+                    .GetTextRectangles);
+            var drawer = container.ResolveNamed<ITextRectanglesDrawer>(name.Drawer, parameterSettings);
             drawer.Draw(textRectangles.GetValueOrThrow());
-            drawer.Save(container.Resolve<Settings>().Bitmap);
+            drawer.Save(settings.Bitmap);
         }
 
-        public static Result<IContainer> SetContainer(Settings settings) =>
-            Result.Of(() =>
-            {
-                var builder = new ContainerBuilder();
-                builder.RegisterType<TxtReader>().Named<IFileReader>("txt");
-                builder.RegisterType<TextParser>().As<ITextParser>();
-                builder.RegisterType<WordsFilter>().Named<IWordsFilter>("All");
-                builder.RegisterType<WordsEditor>().Named<IWordsEditor>("No format");
-                builder.RegisterType<WordsBounder>().As<IWordsBounder>();
-                builder.RegisterType<CloudBuilder>().As<ITagCloudBuilder>();
-                builder.RegisterType<PngDrawer>().Named<ITextRectanglesDrawer>("png");
-                builder.RegisterType<CircularCloudLayouter>().Named<ITagCloudLayouter>("Circular");
-                builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null))
-                    .As<ILogger>();
-                builder.RegisterInstance(settings).As<Settings>();
-                builder.Register(_ => settings.Center).As<Point>();
-                return builder.Build();
-            });
-        
-
-        private static Result<ContainerBuilder> Register<TInterface>(
-            ContainerBuilder builder,
-            IEnumerable<ForRegister> toRegister) =>
-            Result.Of(() =>
-            {
-                foreach (var registring in toRegister.Where(t => t.Implementation == typeof(TInterface)))
-                    builder.RegisterType(registring.Implementation).Named<TInterface>(registring.Name);
-                return builder;
-            });
+        private static Result<IContainer> SetContainer() => Result.Of(() =>
+        {
+            var builder = new ContainerBuilder();
+            var assm = Assembly.Load("TagCloudBuilder");
+            foreach (var type in assm.GetTypes().Where(t => t.IsInterface))
+                builder.RegisterAssemblyTypes(assm)
+                    .Named(t => t.Name, type)
+                    .AsImplementedInterfaces();
+            builder.RegisterInstance(new Logger("CloudLogger", InternalTraceLevel.Debug, TextWriter.Null))
+                .As<ILogger>();
+            return builder.Build();
+        });
     }
 }

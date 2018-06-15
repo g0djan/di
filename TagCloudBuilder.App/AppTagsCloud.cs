@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Autofac;
 using TagCloudBuilder.Domain;
 using TagCloudBuilder.Infrastructure;
 
@@ -23,11 +24,13 @@ namespace TagCloudBuilder.App
             : Result.Fail<int>($"Incorrect height, try use number from interval [0;{Picture.Height}]");
 
 
-        public AppTagCloud()
+        public AppTagCloud(IContainer container)
         {
             InitializeComponent();
             DoubleBuffered = true;
             ClientSize = new Size(Picture.Location.X + Picture.Width, Picture.Height);
+            MinimumSize = ClientSize;
+            MaximumSize = ClientSize;
 
             AddToBoringWordsButton.Click += (sender, args) => boringWords.Add(BoringWordsTextBox.Text);
             RemoveToBoringWordsButton.Click += (sender, args) => boringWords.Remove(BoringWordsTextBox.Text);
@@ -43,11 +46,10 @@ namespace TagCloudBuilder.App
                 }
 
                 ErrorLabel.Text = "";
-                var container = Program.SetContainer(settings.GetValueOrThrow());
                 var drawResult = Result.OfAction(
-                    () => Program.DrawTagCloud(container.GetValueOrThrow(),
+                    () => Program.DrawTagCloud(container,
                         GetImplementationName().GetValueOrThrow(),
-                        boringWords));
+                        boringWords, settings.GetValueOrThrow()));
                 if (!drawResult.IsSuccess)
                 {
                     ErrorLabel.Text = drawResult.Error;
@@ -82,9 +84,9 @@ namespace TagCloudBuilder.App
             var reader = parts[1];
             var filter = (string) PartOfSpeechListBox.SelectedItem;
             var editor = (string) WordsFormatListBox.SelectedItem;
-            var builder = (string) BuildAlgorithmListBox.SelectedItem;
+            var layouter = (string) BuildAlgorithmListBox.SelectedItem;
             var drawer = (string) ImageFormatListBox.SelectedItem;
-            return Result.Ok(new ImplementationName(reader, filter, editor, builder, drawer));
+            return Result.Ok(new ImplementationName(reader, filter, editor, layouter, drawer));
         }
 
         private Result<Settings> GetSettings()

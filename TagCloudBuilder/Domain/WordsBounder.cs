@@ -14,15 +14,15 @@ namespace TagCloudBuilder.Domain
 
     public class WordsBounder : IWordsBounder
     {
-        private FontFamily FontFamily { get; }
-        private Graphics Graphics { get; }
+        private FontFamily FontFamily { get; set; }
+        private Graphics Graphics { get; set; }
 
         public WordsBounder(Settings settings)
         {
             FontFamily = settings.FontFamily;
             Graphics = settings.Graphics;
         }
-
+        
         public Result<IEnumerable<Size>> ConvertWordsToSizes(IEnumerable<string> words) =>
             Result.Of(() => words
                 .GroupBy(key => key)
