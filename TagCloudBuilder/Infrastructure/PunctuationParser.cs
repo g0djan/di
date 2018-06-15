@@ -9,7 +9,7 @@ namespace TagCloudBuilder.Domain
         Result<IEnumerable<string>> GetWords(string text);
     }
 
-    public class TextParser : ITextParser
+    public class PunctuationParser : ITextParser
     {
         public Result<IEnumerable<string>> GetWords(string text)
         {

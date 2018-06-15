@@ -8,35 +8,29 @@ namespace TagCloudBuilder.Domain
 {
     public interface IWordsBounder
     {
-        Result<IEnumerable<Size>> ConvertWordsToSizes(IEnumerable<string> words);
-        Result<Font> GetFont(IGrouping<string, string> word, IEnumerable<string> words);
+        Result<IEnumerable<Size>> ConvertWordsToSizes(IEnumerable<string> words, Settings settings);
+        Result<Font> GetFont(IGrouping<string, string> word, IEnumerable<string> words, Settings settings);
     }
 
     public class WordsBounder : IWordsBounder
     {
-        private FontFamily FontFamily { get; set; }
-        private Graphics Graphics { get; set; }
-
-        public WordsBounder(Settings settings)
-        {
-            FontFamily = settings.FontFamily;
-            Graphics = settings.Graphics;
-        }
-        
-        public Result<IEnumerable<Size>> ConvertWordsToSizes(IEnumerable<string> words) =>
+        public Result<IEnumerable<Size>> ConvertWordsToSizes(IEnumerable<string> words, Settings settings) =>
             Result.Of(() => words
                 .GroupBy(key => key)
                 .OrderByDescending(group => group.Count())
-                .Select(word => GetSize(word.Key, GetFont(word, words).GetValueOrThrow())));
+                .Select(word => GetSize(word.Key, GetFont(word, words, settings).GetValueOrThrow(),
+                    settings.Graphics)));
 
-        public Result<Font> GetFont(IGrouping<string, string> word, IEnumerable<string> words) =>
+        public Result<Font> GetFont(IGrouping<string, string> word,
+            IEnumerable<string> words,
+            Settings settings) =>
             Result.Of(() => GetFont(GetFontSize(
                 word.Count(),
                 words.Count(),
                 word.Key.Length,
-                GetMinImageDimension())));
+                GetMinImageDimension(settings.Graphics)), settings.FontFamily));
 
-        private int GetMinImageDimension() => (int) Math.Min(Graphics.DpiX, Graphics.DpiY);
+        private int GetMinImageDimension(Graphics graphics) => (int) Math.Min(graphics.DpiX, graphics.DpiY);
 
         private int GetFontSize(int countThisWord, int countAllWords, int wordLength, int diametr)
         {
@@ -48,10 +42,10 @@ namespace TagCloudBuilder.Domain
             return (int) Math.Ceiling(vovelHeight);
         }
 
-        private Font GetFont(int fontSize) =>
-            new Font(FontFamily, fontSize);
+        private Font GetFont(int fontSize, FontFamily fontFamily) =>
+            new Font(fontFamily, fontSize);
 
-        private Size GetSize(string word, Font font) =>
-            Size.Ceiling(Graphics.MeasureString(word, font));
+        private Size GetSize(string word, Font font, Graphics graphics) =>
+            Size.Ceiling(graphics.MeasureString(word, font));
     }
 }

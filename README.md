@@ -22,20 +22,19 @@
   ```
   ├── TagCloudBuilder
   |   ├── Domain
-  |   |   ├── CircularCloudBuilder
+  |   |   ├── CloudBuilder
   |   |   ├── CircularCloudLayouter
-  |   |   ├── Cloud
-  |   |   ├── PngDrawer
+  |   |   ├── Cloud  
   |   |   ├── Settings
-  |   |   ├── TextParser
-  |   |   ├── TextRectangle
-  |   |   ├── TxtReader
-  |   |   ├── WordsBounder
-  |   |   ├── WordsEditor
-  |   |   └── WordsFilter
+  |   |   ├── TextRectangle  
+  |   |   └── WordsBounder  
   |   └── Infrastructure
   |      ├── ParseResultExtensions
   |      ├── PointExtensions
+  |      ├── PunctuationParser
+  |      ├── TxtReader
+  |      ├── WordsEditor
+  |      ├── WordsFilter
   |      ├── Quarter
   |      ├── Result
   |      └── ResultQueryExpressionExtensions
@@ -45,7 +44,7 @@
   |   |   └── ...(тексты ввода)
   |   ├── AppTagCloud
   |   ├── ForRegister
-  |   ├── ImplementationName
+  |   ├── PngDrawer
   |   └── Program
   └── TagCloudBuilder.Tests
       ├── CircularCloudBuilder_Should

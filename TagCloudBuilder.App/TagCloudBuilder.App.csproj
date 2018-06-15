@@ -42,6 +42,7 @@
       <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -61,7 +62,7 @@
       <DependentUpon>AppTagsCloud.cs</DependentUpon>
     </Compile>
     <Compile Include="ForRegister.cs" />
-    <Compile Include="ImplementationName.cs" />
+    <Compile Include="PngDrawer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="AppTagsCloud.resx">

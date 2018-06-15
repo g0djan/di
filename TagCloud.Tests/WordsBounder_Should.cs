@@ -16,7 +16,7 @@ namespace TagCloudBuilder.Tests
         public void SetUp()
         {
             words = new[] {"a", "b", "b"};
-            settings = new Settings(
+            settings = new Settings("txt", "All", "No format", "Circular", "png", "WordsBounder",
                 Color.AliceBlue, FontFamily.GenericMonospace, new Point(), new Bitmap(10, 10), "");
         }
 
@@ -33,8 +33,8 @@ namespace TagCloudBuilder.Tests
         [Test]
         public void SizesDescendingWithWordsFrequency()
         {
-            var wordBounder = new WordsBounder(settings);
-            var sizes = wordBounder.ConvertWordsToSizes(words).GetValueOrThrow().ToArray();
+            var wordBounder = new WordsBounder();
+            var sizes = wordBounder.ConvertWordsToSizes(words, settings).GetValueOrThrow().ToArray();
             GetArea(sizes[0]).Should().BeGreaterOrEqualTo(GetArea(sizes[1]));
         }
 

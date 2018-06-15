@@ -11,6 +11,7 @@ namespace TagCloudBuilder.Domain
     {
         Rectangle PutNextRectangle(Size rectangleSize);
         Cloud<Rectangle> Cloud { get; }
+        void Setup(Settings settings);
     }
 
     public class CircularCloudLayouter : ITagCloudLayouter
@@ -20,9 +21,8 @@ namespace TagCloudBuilder.Domain
         private readonly Dictionary<Quarter, Func<Rectangle, Point>> shifts;
         private double angle;
 
-        public CircularCloudLayouter(Settings settings)
+        public CircularCloudLayouter()
         {
-            Cloud = new Cloud<Rectangle>(settings.Center);
             radius = 1;
             shifts = InitShifts();
             angle = 0d;
@@ -31,6 +31,11 @@ namespace TagCloudBuilder.Domain
         public void Setup(Settings settings)
         {
             Cloud = new Cloud<Rectangle>(settings.Center);
+        }
+
+        public void Setup(Point point)
+        {
+            Cloud = new Cloud<Rectangle>(point);
         }
 
         public Rectangle PutNextRectangle(Size rectangleSize)

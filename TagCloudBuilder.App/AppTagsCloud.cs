@@ -3,7 +3,6 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Autofac;
-using Autofac.Core;
 using TagCloudBuilder.Domain;
 using TagCloudBuilder.Infrastructure;
 
@@ -35,32 +34,43 @@ namespace TagCloudBuilder.App
 
             AddToBoringWordsButton.Click += (sender, args) => boringWords.Add(BoringWordsTextBox.Text);
             RemoveToBoringWordsButton.Click += (sender, args) => boringWords.Remove(BoringWordsTextBox.Text);
+            
             BuildButton.Click += (sender, args) =>
             {
                 ColorsComboBox.SelectedIndex = ColorsComboBox.FindStringExact(ColorsComboBox.SelectedText);
                 Picture.Image = null;
-                var settings = GetSettings();
-                if (!settings.IsSuccess)
+                var resultSettings = GetSettings();
+                if (!resultSettings.IsSuccess)
                 {
-                    ErrorLabel.Text = settings.Error;
+                    ErrorLabel.Text = resultSettings.Error;
                     return;
                 }
 
+                var settings = resultSettings.GetValueOrThrow();
                 ErrorLabel.Text = "";
-                var drawResult = Result.OfAction(
-                    () => DrawTagCloud(container,
-                        GetImplementationName().GetValueOrThrow(),
-                        boringWords, settings.GetValueOrThrow()));
-                if (!drawResult.IsSuccess)
+                var filter = container.ResolveNamed<IWordsFilter>(settings.WordsFilter);
+                var reader = container.ResolveNamed<IFileReader>(settings.Reader);
+                var parser = container.Resolve<ITextParser>();
+                var editor = container.ResolveNamed<IWordsEditor>(settings.WordsEditor);
+                var builder = container.Resolve<ITagCloudBuilder>();
+                var drawer = container.ResolveNamed<ITextRectanglesDrawer>(settings.Drawer);
+                var textRectangles = Build(filter, reader, parser, editor, builder, settings);
+                if (!textRectangles.IsSuccess)
                 {
-                    ErrorLabel.Text = drawResult.Error;
+                    ErrorLabel.Text = textRectangles.Error;
                     return;
                 }
-
+                var result = Result.OfAction(() => DrawTagCloud(drawer, textRectangles.GetValueOrThrow(), settings));
+                if (!result.IsSuccess)
+                {
+                    ErrorLabel.Text = result.Error;
+                    return;
+                }
                 using (var fs = new FileStream("cloud.png", FileMode.Open, FileAccess.Read))
                 using (var original = Image.FromStream(fs))
                     Picture.Image = new Bitmap(original, 512, 512);
             };
+            
             Controls.AddRange(new Control[]
             {
                 FilenameBox, ImageFormatListBox, FileNameLabel, ImageFormatLabel,
@@ -77,42 +87,25 @@ namespace TagCloudBuilder.App
             });
         }
 
-        private void DrawTagCloud(IContainer container,
-            ImplementationName name,
-            IEnumerable<string> boringWords,
-            Settings settings)
+        private Result<IEnumerable<TextRectangle>> Build(IWordsFilter filter, IFileReader reader,
+            ITextParser parser, IWordsEditor editor, ITagCloudBuilder builder, Settings settings)
         {
-            var filter = container.ResolveNamed<IWordsFilter>(name.WordsFilter);
             filter.AddBoringWords(boringWords);
-            var parameterSettings = new ResolvedParameter((pi, ctx) => pi.Name == "settings",
-                (pi, ctx) => settings);
-            var parameterLayouter = new ResolvedParameter((pi, ctx) => pi.Name == "layouter",
-                (pi, ctx) => container.ResolveNamed<ITagCloudLayouter>(name.CloudLayouter, parameterSettings));
-            var parameterBounder = new ResolvedParameter((pi, ctx) => pi.Name == "wordsBounder",
-                (pi, ctx) => container.Resolve<IWordsBounder>(parameterSettings));
-            var textRectangles = container.ResolveNamed<IFileReader>(name.Reader, parameterSettings)
+            return reader 
                 .ReadFile(settings.InputPath)
-                .Then(container.Resolve<ITextParser>().GetWords)
+                .Then(parser.GetWords) 
                 .Then(filter.FilterWords)
-                .Then(container.ResolveNamed<IWordsEditor>(name.WordsEditor).Edit)
-                .Then(container.Resolve<ITagCloudBuilder>(parameterBounder, parameterLayouter, parameterSettings)
-                    .GetTextRectangles);
-            var drawer = container.ResolveNamed<ITextRectanglesDrawer>(name.Drawer, parameterSettings);
-            drawer.Draw(textRectangles.GetValueOrThrow());
-            drawer.Save(settings.Bitmap);
+                .Then(editor.Edit) 
+                .Then(words => builder 
+                    .GetTextRectangles(words, settings));
         }
 
-        private Result<ImplementationName> GetImplementationName()
+        private void DrawTagCloud(ITextRectanglesDrawer drawer,
+            IEnumerable<TextRectangle> textRectangles,
+            Settings settings)
         {
-            var parts = FilenameBox.Text.Split('.');
-            if (parts.Length != 2)
-                return Result.Fail<ImplementationName>("filename, should contain extension");
-            var reader = parts[1];
-            var filter = (string) PartOfSpeechListBox.SelectedItem;
-            var editor = (string) WordsFormatListBox.SelectedItem;
-            var layouter = (string) BuildAlgorithmListBox.SelectedItem;
-            var drawer = (string) ImageFormatListBox.SelectedItem;
-            return Result.Ok(new ImplementationName(reader, filter, editor, layouter, drawer));
+            drawer.Draw(textRectangles, settings);
+            drawer.Save(settings.Bitmap);
         }
 
         private Result<Settings> GetSettings()
@@ -121,6 +114,10 @@ namespace TagCloudBuilder.App
                 return Result.Fail<Settings>(Width.Error);
             if (!Height.IsSuccess)
                 return Result.Fail<Settings>(Height.Error);
+            var inputFileName = Path.Combine("..", "..", "Resources", FilenameBox.Text);
+            var parts = FilenameBox.Text.Split('.');
+            if (parts.Length != 2)
+                return Result.Fail<Settings>("filename, should contain extension");
             return Result.Of(() =>
             {
                 var color = Color.FromName((string) ColorsComboBox.SelectedItem);
@@ -129,8 +126,14 @@ namespace TagCloudBuilder.App
                 var height = Height.GetValueOrThrow();
                 var center = new Point(width / 2, height / 2);
                 var bitmap = new Bitmap(width, height);
-                var inputFileName = Path.Combine("..", "..", "Resources", FilenameBox.Text);
-                return new Settings(color, fontFamily, center, bitmap, inputFileName);
+                var reader = parts[1];
+                var filter = (string) PartOfSpeechListBox.SelectedItem;
+                var editor = (string) WordsFormatListBox.SelectedItem;
+                var layouter = (string) BuildAlgorithmListBox.SelectedItem;
+                var drawer = (string) ImageFormatListBox.SelectedItem;
+                var bounder = "WordsBounder";
+                return new Settings(reader, filter, editor, layouter, drawer, bounder, color, fontFamily, center,
+                    bitmap, inputFileName);
             });
         }
 

@@ -18,9 +18,10 @@ namespace TagCloudBuilder.Tests
         public void SetUp()
         {
             Words = new[] {"a"};
-            Settings = new Settings(
+            Settings = new Settings("txt", "All", "No format", "Circular", "png", "WordsBounder",
                 Color.AliceBlue, FontFamily.GenericMonospace, new Point(), new Bitmap(10, 10), "");
             Layouter = new CircularCloudLayouter();
+            Layouter.Setup(new Point(0, 0));
         }
 
         [Test]
@@ -28,10 +29,10 @@ namespace TagCloudBuilder.Tests
         {
             var mock = new Mock<ITagCloudBuilder>();
             var bounder = new Mock<IWordsBounder>();
-            mock.Setup(builder => builder.GetTextRectangles(It.IsAny<IEnumerable<string>>()))
+            mock.Setup(builder => builder.GetTextRectangles(It.IsAny<IEnumerable<string>>(), Settings))
                 .Returns(It.IsAny<Result<IEnumerable<TextRectangle>>>());
-            new CloudBuilder(bounder.Object, Layouter, TODO).GetTextRectangles(Words);
-            bounder.Verify(bd => bd.ConvertWordsToSizes(Words));
+            new CloudBuilder(new[] {bounder.Object}, new []{Layouter}).GetTextRectangles(Words, Settings);
+            bounder.Verify(bd => bd.ConvertWordsToSizes(Words, Settings));
         }
     }
 }
