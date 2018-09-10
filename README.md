@@ -7,7 +7,7 @@ In future I'll implement 3 extension points, changing of:
   * Font
   * Color of words
   
-# Impleneted features
+# Implemented features
   * Changing of size of image
   * Add and remove forbidden words to dictionary
 
