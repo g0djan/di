@@ -2,13 +2,13 @@
 ![alt text](cloud.png)
 
 App for building tag cloud from text file, with GUI.\
-In future I'll implement 3 extension points, chnging of:
+In future I'll implement 3 extension points, changing of:
   * Cloud form
   * Font
   * Color of words\
-It was implemented, changing of:
-  * Size of image
-  * Dictionary of forbidden words
+This features was implemented:
+  * Changing of size of image
+  * Add and remove forbidden words to dictionary
 
 # How to run?
  1. Build project, .NET 7.2
@@ -54,9 +54,6 @@ It was implemented, changing of:
       ├── TxtReaderShould
       └── WordsFilterShould
 
-
-
-  __Summary__: 3 directories, n files, m line numer
   ```
 
 # UI
