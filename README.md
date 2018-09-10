@@ -7,6 +7,7 @@ In future I'll implement 3 extension points, changing of:
   * Font
   * Color of words
 \
+\
 This features was implemented:
   * Changing of size of image
   * Add and remove forbidden words to dictionary
