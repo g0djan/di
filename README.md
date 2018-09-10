@@ -1,24 +1,23 @@
-# Облако тэгов
+# Tag cloud
 ![alt text](cloud.png)
 
-Приложение для построения облака тэгов по тексту из переданного файла, с графическим интерфейсом.
-При генерации облака можно настраивать:
-  * Форму облака
-  * Шрифт слов
-  * Цвет слов
-  * Размер изображения
-  * Фильтрация исходного текста(словарь запрещенных слов, определенные части речи)
+App for building tag cloud from text file, with GUI.
+In future I'll implement 3 extension points, chnging of:
+  * Cloud form
+  * Font
+  * Color of words
+It was implemented, changing of:
+  * Size of image
+  * Dictionary of forbidden words
 
-# Запускать TagCloudBuilder.App.exe
-  Чтобы облако построилось по переданному тексту, его нужно закинуть
-  в TagCloudBuilder.App\Resources
+# How to run?
+ 1. Build project, .NET 7.2
+ 2. Run TagCloudBuilder.App.exe
+ 3. Put .txt file in TagCloudBuilder.App\Resources
+ 4. Press build button to create cloud
+ 5. You can find it in TagCloudBuilder.App/bin/Release(or Debug)
 
-  Построенную картинку можно найти в TagCloudBuilder.App/bin/Release(ну или Debug)
-
-План презентации
-  1. Краткое описание
-  2. Точки расширения
-  3. Структура проекта
+# Directory tree
   ```
   ├── TagCloudBuilder
   |   ├── Domain
@@ -59,8 +58,6 @@
 
   __Summary__: 3 directories, n files, m line numer
   ```
-  4. Использование DI-контейнера
-  5. Тестирование
 
 # UI
   ![alt text](ui.png)
