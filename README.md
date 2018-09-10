@@ -1,11 +1,11 @@
 # Tag cloud
 ![alt text](cloud.png)
 
-App for building tag cloud from text file, with GUI.
+App for building tag cloud from text file, with GUI.\
 In future I'll implement 3 extension points, chnging of:
   * Cloud form
   * Font
-  * Color of words
+  * Color of words\
 It was implemented, changing of:
   * Size of image
   * Dictionary of forbidden words
